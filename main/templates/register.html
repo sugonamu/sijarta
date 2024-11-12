@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% block meta %}
+<title>Register</title>
+{% endblock meta %}
+{% load static %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen bg-gray-100" style="background-color: #f9f9f9;">
+    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
+        <h1 class="text-3xl font-bold text-center" style="color: #b89576;">Register</h1>
+
+        <form method="POST" class="register-form" id="register-form">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="mb-4">
+                <label for="{{ field.id_for_label }}" class="block text-sm font-medium" style="color: #554a35;">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <!-- Password Criteria -->
+            <div class="password-criteria mt-4">
+                <ul class="list-disc list-inside" style="font-size: 0.85rem;">
+                    <li id="criteria-similarity" style="color: #8b8577;">Your password can’t be too similar to your other personal information.</li>
+                    <li id="criteria-length" style="color: #8b8577;">Your password must contain at least 8 characters.</li>
+                    <li id="criteria-common" style="color:#8b8577;">Your password can’t be a commonly used password.</li>
+                    <li id="criteria-numeric" style="color: #8b8577;">Your password can’t be entirely numeric.</li>
+                </ul>
+            </div>
+
+            <!-- Message for password criteria -->
+            <p id="password-criteria-message" class="mt-2 text-red-600" style="font-size: 0.85rem;">Please ensure your password meets the required criteria.</p>
+
+            <div class="mb-4 mt-6">
+              <label for="role" class="block text-sm font-medium" style="color: #554a35;">Register as:</label>
+              <select name="role" id="role" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
+                  <option value="user">User</option>
+                  <option value="worker">Worker</option>
+              </select>
+              {% if form.role.errors %}
+                  <p class="mt-1 text-xs text-red-600">{{ form.role.errors }}</p>
+              {% endif %}
+          </div>
+
+            <div>
+                <input type="submit" name="submit" value="Register" 
+                       class="w-full font-semibold py-2 px-4 rounded transition duration-300 focus:outline-none bg-[#b89576] text-white hover:bg-[#d1b79a]" />
+            </div>
+        </form>
+        <p class="text-center mt-4" style="color: #8b8577;">Already have an account? <a href="{% url 'main:login' %}" class="text-brown-600 hover:underline">Login here</a>.</p>
+    </div>
+</div>
+
+<!-- JavaScript for hiding password criteria -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('id_password1');
+        const criteriaLength = document.getElementById('criteria-length');
+        const criteriaSimilarity = document.getElementById('criteria-similarity');
+        const criteriaCommon = document.getElementById('criteria-common');
+        const criteriaNumeric = document.getElementById('criteria-numeric');
+        const passwordMessage = document.getElementById('password-criteria-message');
+
+        const usernameInput = document.getElementById('id_username'); 
+        const userInfo = []; 
+
+        usernameInput.addEventListener('input', function() {
+            userInfo[0] = usernameInput.value; 
+            checkPasswordCriteria(); 
+        });
+
+        function checkPasswordCriteria() {
+            const password = passwordInput.value;
+
+            // Show all criteria if the password is blank
+            if (password.length === 0) {
+                criteriaLength.style.display = 'block'; 
+                criteriaNumeric.style.display = 'block'; 
+                criteriaCommon.style.display = 'block'; 
+                criteriaSimilarity.style.display = 'block'; 
+                passwordMessage.style.display = 'none'; // Hide the message
+                return; // Stop further checks if password is blank
+            }
+
+            let isCriteriaMet = true;
+
+            // Check length
+            if (password.length >= 8) {
+                criteriaLength.style.display = 'none'; 
+            } else {
+                criteriaLength.style.display = 'block'; 
+                isCriteriaMet = false; // Update criteria check
+            }
+
+            // Check numeric
+            if (/^\d+$/.test(password)) {
+                criteriaNumeric.style.display = 'block'; 
+                isCriteriaMet = false; // Update criteria check
+            } else {
+                criteriaNumeric.style.display = 'none'; 
+            }
+
+            // Check common password
+            if (isCommonPassword(password)) {
+                criteriaCommon.style.display = 'block'; 
+                isCriteriaMet = false; // Update criteria check
+            } else {
+                criteriaCommon.style.display = 'none'; 
+            }
+
+            // Check similarity
+            if (isSimilarToUserInfo(password)) {
+                criteriaSimilarity.style.display = 'block'; 
+                isCriteriaMet = false; // Update criteria check
+            } else {
+                criteriaSimilarity.style.display = 'none'; 
+            }
+
+            // Update message visibility based on criteria check
+            if (!isCriteriaMet) {
+                passwordMessage.style.display = 'none'; // Hide the message by default
+            } else {
+                passwordMessage.style.display = 'none'; // Hide message if criteria met
+            }
+        }
+
+        function isCommonPassword(password) {
+            const commonPasswords = [
+                'password', 'abcdefghijklmno', 'abcdabcd', 'trustno1', 'princess',
+                'qwerty', 'abc123', 'letmein', 'iloveyou', 'admin',
+                'welcome', 'monkey', '1234567', '123123', 'football',
+                'password1', 'qwertyuiop', 'password1', 'sunshine', 
+                'trustno1', 'iloveyou2', 'dragon', 'password123', 
+                'baseball', 'abcdef', 'asdfgh', 'zxcvbn', 'qwerty123',
+                'letmein', 'monkey', 'football', 'superman', 
+                'starwars', 'hello', 'lovely', 'ninja', 'george', 
+                '!@#$%^&*()', 'qwertyuiop', 'zxcvbnm', 'abcabcabc'
+            ];
+            return commonPasswords.includes(password.toLowerCase());
+        }
+
+        function isSimilarToUserInfo(password) {
+            const username = userInfo[0] ? userInfo[0].toLowerCase() : '';
+            return password.toLowerCase().includes(username);
+        }
+
+        passwordInput.addEventListener('input', checkPasswordCriteria);
+
+        // Form submission handling
+        const form = document.getElementById('register-form');
+        form.addEventListener('submit', function(event) {
+            checkPasswordCriteria(); // Ensure criteria are checked on submit
+            // Prevent form submission if criteria are not met
+            if (criteriaLength.style.display === 'block' ||
+                criteriaSimilarity.style.display === 'block' ||
+                criteriaCommon.style.display === 'block' ||
+                criteriaNumeric.style.display === 'block') {
+                event.preventDefault(); // Stop form from submitting
+                passwordMessage.style.display = 'block'; // Show message
+            } else {
+                passwordMessage.style.display = 'none'; // Hide message if criteria met
+            }
+        });
+    });
+</script>
+
+{% endblock content %}

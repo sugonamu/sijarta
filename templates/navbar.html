@@ -1,0 +1,71 @@
+{% load static %}
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"> <!-- Importing Inter font -->
+    <style>
+        nav {
+            font-family: 'Inter', sans-serif; /* Updated font-family */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        nav .flex a {
+            font-size: 1rem;
+            color: #4A4A4A;
+            font-family: 'Inter', sans-serif; /* Ensure all links use Inter font */
+        }
+
+        nav button {
+            font-size: 0.875rem;
+            font-family: 'Inter', sans-serif; /* Ensure buttons use Inter font */
+        }
+
+        button.bg-black {
+            background-color: #000;
+            color: #fff;
+        }
+
+        button.bg-black:hover {
+            background-color: #333;
+        }
+
+        button.border {
+            border: 1px solid #4A4A4A;
+            color: #4A4A4A;
+        }
+
+        button.border:hover {
+            background-color: #4A4A4A;
+            color: #fff;
+        }
+
+        button.register {
+            background-color: #4A90E2;
+            color: #fff;
+        }
+
+        button.register:hover {
+            background-color: #357ABD;
+        }
+    </style>
+</head>
+
+<nav class="bg-white text-gray-800 p-4 flex justify-between items-center shadow-lg">
+    <div class="flex items-center">
+            <span class="self-center text-xl font-bold text-gray-800">
+                <span style="color: #B89B7C;">Bali</span>
+                <span style="font-size: 1.5em; color: #B89B7C;">N</span>
+                <span style="color: #B89B7C;">Chill</span>
+            </span>
+        </a>
+      
+    </div>
+    <a href="{% url 'main:home' %}" class="mr-2"> Home</a>
+    <div class="flex items-center space-x-4">
+        {% if user.is_authenticated %}
+            <span class="mr-4">Welcome, {{ user.username }}</span>
+            <a href="{% url 'main:logout' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Logout</a>
+            {% else %}
+            <a href="{% url 'main:login' %}" class="login rounded-lg px-4 py-2 transition duration-300">Login</a>
+            <a href="{% url 'main:register' %}" class="register rounded-lg px-4 py-2 transition duration-300" style="background-color: #997A57;">Register</a>
+        {% endif %}
+    </div>
+</nav>
