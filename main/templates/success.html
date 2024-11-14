@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Homepage{% endblock title %}
+{% block title %}Success Page{% endblock title %}
 
 {% block content %}
 {% include 'navbar.html' %}
@@ -9,21 +9,36 @@
 <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
     <h1 class="text-3xl font-bold mb-6">Welcome to the Service Homepage</h1>
 
-    <!-- Search Filter -->
+    <!-- Search Filter and Search Bar -->
     <div class="mb-6">
-        <label for="categoryFilter" class="block mb-2 text-lg font-medium">Filter by Category:</label>
-        <select id="categoryFilter" class="w-full p-2 border border-gray-300 rounded">
-            <option value="">All Categories</option>
-            {% for category in categories %}
-                <option value="{{ category.id }}">{{ category.name }}</option>
-            {% endfor %}
-        </select>
+        <form id="filterForm" method="GET" action="{% url 'main:home' %}" class="flex space-x-4">
+            <!-- Category Filter -->
+            <div>
+                <label for="categoryFilter" class="block mb-2 text-lg font-medium">Filter by Category:</label>
+                <select id="categoryFilter" name="category" class="p-2 border border-gray-300 rounded" onchange="this.form.submit()">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Search Input -->
+            <div>
+                <label for="searchInput" class="block mb-2 text-lg font-medium">Search:</label>
+                <input type="text" id="searchInput" name="search" value="{{ search_term }}" placeholder="Search categories..." class="p-2 border border-gray-300 rounded">
+            </div>
+
+            <button type="submit" class="p-2 bg-blue-500 text-white rounded">Search</button>
+        </form>
     </div>
 
     <!-- Service Categories and Subcategories -->
     <div id="serviceList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {% for category in categories %}
-            <div class="bg-white p-4 rounded shadow">
+            <div class="bg-white p-4 rounded shadow" data-category-id="{{ category.id }}">
                 <h2 class="text-2xl font-bold mb-2">{{ category.name }}</h2>
                 <ul>
                     {% for subcategory in category.subcategories.all %}
@@ -40,18 +55,8 @@
 </div>
 
 <script>
-    // Filter Functionality
     document.getElementById('categoryFilter').addEventListener('change', function () {
-        var selectedCategory = this.value;
-        var serviceList = document.getElementById('serviceList').children;
-        
-        Array.from(serviceList).forEach(function (categoryDiv) {
-            if (selectedCategory === "" || categoryDiv.dataset.categoryId === selectedCategory) {
-                categoryDiv.style.display = 'block';
-            } else {
-                categoryDiv.style.display = 'none';
-            }
-        });
+        document.getElementById('filterForm').submit();
     });
 </script>
 

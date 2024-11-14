@@ -1,8 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from .forms import LoginForm
-from .models import UserProfile,ServiceCategory
+from .models import UserProfile,ServiceCategory,SubCategory
 import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -12,11 +12,34 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
+from django.db.models import Q
 
 @login_required
 def home(request):
     categories = ServiceCategory.objects.prefetch_related('subcategories').all()
-    return render(request, 'success.html', {'categories': categories})
+    
+    # Get selected category and search term from request
+    selected_category = request.GET.get('category', '')
+    search_term = request.GET.get('search', '')
+
+    # Filter categories if a specific category is selected
+    if selected_category:
+        categories = categories.filter(id=selected_category)
+    
+    # Apply search filter if a search term is entered
+    if search_term:
+        categories = categories.filter(
+            Q(name__icontains=search_term) | 
+            Q(subcategories__name__icontains=search_term)
+        ).distinct()
+
+    return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
+
+
+def subcategory_detail(request, subcategory_id):
+    subcategory = get_object_or_404(SubCategory, id=subcategory_id)
+    return render(request, 'subcategory_detail.html', {'subcategory': subcategory})
+
 
 def success(request):
     return render(request, 'success.html')
@@ -34,16 +57,12 @@ def login_view(request):
 
             if user is not None:
                 login(request, user)
-                response = redirect('main:home')  # Default redirect to home page
+                response = redirect('main:home')  # Redirect to the home page for both roles
 
                 # Set last login cookie
                 response.set_cookie('last_login', str(datetime.datetime.now()))
 
-                # Role-based redirection after login
-                if hasattr(user, 'userprofile') and user.userprofile.role == 'user':
-                    return redirect('main:success')  # Host dashboard
-                else:
-                    return redirect('main:worker')  # Worker (guest) dashboard
+                return response  # Redirect to the same homepage for both roles
 
             else:
                 messages.error(request, "Invalid username or password.")
@@ -51,6 +70,7 @@ def login_view(request):
         form = AuthenticationForm()
 
     return render(request, 'login.html', {'form': form})
+
 
 def register(request):
     if request.method == 'POST':

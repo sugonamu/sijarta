@@ -10,5 +10,6 @@ urlpatterns = [
     path('success/', views.success, name='success'),
     path('worker/', views.worker, name = 'worker'),
     path('logout/', views.logout, name='logout'),
+    path('subcategory/<int:subcategory_id>/', views.subcategory_detail, name='subcategory_detail'),
 
 ]
