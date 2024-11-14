@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from .forms import LoginForm
-from .models import UserProfile
+from .models import UserProfile,ServiceCategory
 import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -15,7 +15,9 @@ from django.db import IntegrityError
 
 @login_required
 def home(request):
-    return render(request, 'home.html')
+    categories = ServiceCategory.objects.prefetch_related('subcategories').all()
+    return render(request, 'success.html', {'categories': categories})
+
 def success(request):
     return render(request, 'success.html')
 
