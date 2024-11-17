@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">Testimonials for {{ subcategory.name }}</h1>
+
+    {% for testimonial in testimonials %}
+        {% if testimonial.subcategory.name == subcategory.name %}
+        <div class="bg-white shadow-md rounded p-4 mb-4">
+            <p class="font-semibold">Rating: {{ testimonial.rating }}/5</p>
+            <p>{{ testimonial.comment }}</p>
+        </div>
+        {% endif %}
+    {% empty %}
+        <p>No testimonials available for this subcategory.</p>
+    {% endfor %}
+</div>
+{% endblock %}
