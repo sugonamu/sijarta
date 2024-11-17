@@ -60,7 +60,15 @@
 <nav class="bg-white text-gray-800 p-4 flex justify-between items-center shadow-lg">
     <div class="flex items-center">
         <span class="self-center text-xl font-bold text-gray-800">
-            <span style="font-size: 1.5em; color: #B89B7C;">Sijarta</span>
+            {% if user.is_authenticated %}
+                {% if user.userprofile.role == 'worker' %}
+                    <span style="font-size: 1.5em; color: #B89B7C;">Worker</span>
+                {% elif user.userprofile.role == 'user' %}
+                    <span style="font-size: 1.5em; color: #B89B7C;">User</span>
+                {% endif %}
+            {% else %}
+                <span style="font-size: 1.5em; color: #B89B7C;">Sijarta</span>
+            {% endif %}
         </span>
     </div>
 
@@ -70,8 +78,8 @@
 
             {% if user.userprofile.role == 'worker' %}
                 <a href="{% url 'main:worker' %}" class="mr-2">Home</a>
-                <a href="{% url 'main:manageorder' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage Order Status</a>
-                <a href="{% url 'main:managejob' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage my Job</a>
+                <a href="{% url 'main:manage_order_status' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage Order Status</a>
+                <a href="{% url 'main:managejob' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage My Job</a>
             {% elif user.userprofile.role == 'user' %}
                 <a href="{% url 'main:success' %}" class="mr-2">Home</a>
                 <a href="{% url 'main:myorder' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">My Order</a>

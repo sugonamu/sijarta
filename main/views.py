@@ -1,18 +1,19 @@
-from django.shortcuts import render, redirect,get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from .forms import LoginForm
-from .models import UserProfile,ServiceCategory,SubCategory,Testimonial
+from .models import UserProfile,ServiceCategory,SubCategory,Testimonial, MyPayTransaction, ServiceOrder, ServiceSession
 import datetime
-from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate, login, logout as auth_logout
-from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import Q
+from decimal import Decimal
+from django.utils.timezone import now
+
 
 @login_required(login_url='/login/')
 def home(request):
@@ -174,8 +175,269 @@ def managejob(request):
 def myorder(request):
     return render(request, 'myorder.html')
 
-def mypay(request):
-    return render(request, 'mypay.html')
 
 def profile(request):
     return render(request, 'profile.html')
+
+@login_required(login_url='/login/')
+def mypay(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+    transactions = user_profile.transactions.order_by('-timestamp')
+
+    context = {
+        'balance': user_profile.mypay_balance,
+        'transactions': transactions,
+    }
+    return render(request, 'mypay.html', context)
+
+@login_required
+def transact(request):
+    if request.method == "POST":
+        transaction_type = request.POST.get("transaction_type")
+        amount = Decimal(request.POST.get("amount", 0))
+
+        # Retrieve the user's profile
+        user_profile = UserProfile.objects.get(user=request.user)
+
+        if transaction_type == "Deposit":
+            # Add to balance
+            user_profile.mypay_balance += amount
+            user_profile.save()
+            messages.success(request, f"Successfully deposited Rp {amount:.2f}.")
+        elif transaction_type == "Withdraw":
+            if user_profile.mypay_balance >= amount:
+                # Deduct from balance
+                user_profile.mypay_balance -= amount
+                user_profile.save()
+                messages.success(request, f"Successfully withdrew Rp {amount:.2f}.")
+            else:
+                messages.error(request, "Insufficient balance for withdrawal.")
+
+    return redirect("main:mypay")
+
+@login_required(login_url='/login/')
+def mypay_transactions(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    if request.method == 'POST':
+        transaction_type = request.POST.get('transaction_type')
+
+        if transaction_type == 'TopUp':
+            amount = float(request.POST.get('amount', 0))
+            if amount > 0:
+                user_profile.mypay_balance += amount
+                user_profile.save()
+                MyPayTransaction.objects.create(
+                    user_profile=user_profile,
+                    transaction_type='TopUp',
+                    amount=amount
+                )
+                messages.success(request, "Top Up successful.")
+            else:
+                messages.error(request, "Invalid amount.")
+
+        elif transaction_type == 'Withdrawal':
+            amount = float(request.POST.get('amount', 0))
+            if amount > 0 and user_profile.mypay_balance >= amount:
+                user_profile.mypay_balance -= amount
+                user_profile.save()
+                MyPayTransaction.objects.create(
+                    user_profile=user_profile,
+                    transaction_type='Withdrawal',
+                    amount=amount
+                )
+                messages.success(request, "Withdrawal successful.")
+            else:
+                messages.error(request, "Insufficient balance or invalid amount.")
+
+        elif transaction_type == 'Transfer':
+            recipient_phone = request.POST.get('recipient_phone')
+            amount = float(request.POST.get('amount', 0))
+            try:
+                recipient_user = UserProfile.objects.get(user__username=recipient_phone)
+                if amount > 0 and user_profile.mypay_balance >= amount:
+                    user_profile.mypay_balance -= amount
+                    recipient_user.mypay_balance += amount
+                    user_profile.save()
+                    recipient_user.save()
+                    MyPayTransaction.objects.create(
+                        user_profile=user_profile,
+                        transaction_type='Transfer',
+                        amount=-amount
+                    )
+                    MyPayTransaction.objects.create(
+                        user_profile=recipient_user,
+                        transaction_type='Transfer',
+                        amount=amount
+                    )
+                    messages.success(request, "Transfer successful.")
+                else:
+                    messages.error(request, "Insufficient balance or invalid amount.")
+            except UserProfile.DoesNotExist:
+                messages.error(request, "Recipient not found.")
+
+        return redirect('main:mypay')
+
+    # Render the MyPay Transactions form on GET request
+    service_sessions = ServiceSession.objects.filter(user=request.user) if hasattr(request.user, 'service_sessions') else []
+    context = {
+        'user': request.user,
+        'balance': user_profile.mypay_balance,
+        'date': now(),
+        'service_sessions': service_sessions,
+    }
+    return render(request, 'mypay_transactions.html', context)
+    
+
+@login_required(login_url='/login/')
+def service_jobs(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    # Ensure the worker only sees jobs for their registered subcategories
+    # and orders that are 'Looking for Nearby Worker'
+    available_orders = ServiceOrder.objects.filter(
+        subcategory__in=user_profile.subcategories.all(),
+        status='Looking for Nearby Worker'
+    )
+
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        try:
+            order = ServiceOrder.objects.get(id=order_id)
+            if order.status == 'Looking for Nearby Worker':
+                order.worker = user_profile
+                order.status = 'Waiting for Worker to Depart'
+                order.save()
+                messages.success(request, "Order accepted successfully.")
+            else:
+                messages.error(request, "Order is no longer available.")
+        except ServiceOrder.DoesNotExist:
+            messages.error(request, "Order not found.")
+        return redirect('main:service_jobs')
+
+    context = {
+        'available_orders': available_orders,
+    }
+    return render(request, 'service_jobs.html', context)
+
+
+@login_required(login_url='/login/')
+def service_job_status(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    # Fetch active orders for the worker
+    active_orders = ServiceOrder.objects.filter(
+        worker=user_profile
+    ).exclude(status__in=['Order Completed', 'Order Canceled'])
+
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        action = request.POST.get('action')
+        try:
+            order = ServiceOrder.objects.get(id=order_id, worker=user_profile)
+            if action == 'Arrived at Location' and order.status == 'Waiting for Worker to Depart':
+                order.status = 'Worker Arrived at Location'
+            elif action == 'Providing Service' and order.status == 'Worker Arrived at Location':
+                order.status = 'Service in Progress'
+            elif action == 'Service Completed' and order.status == 'Service in Progress':
+                order.status = 'Order Completed'
+                # Handle automatic payment transfer to worker (Trigger 4)
+                order.worker.mypay_balance += order.total_payment
+                order.worker.save()
+                MyPayTransaction.objects.create(
+                    user_profile=order.worker,
+                    transaction_type='ServicePayment',
+                    amount=order.total_payment
+                )
+            else:
+                messages.error(request, "Invalid action.")
+                return redirect('main:service_job_status')
+            order.save()
+            messages.success(request, f"Order status updated to {order.status}.")
+        except ServiceOrder.DoesNotExist:
+            messages.error(request, "Order not found.")
+        return redirect('main:service_job_status')
+
+    context = {
+        'active_orders': active_orders,
+    }
+    return render(request, 'service_job_status.html', context)
+
+
+@login_required(login_url='/login/')
+def managejob(request):
+    # Get worker's subcategories
+    user_profile = UserProfile.objects.get(user=request.user)
+    worker_subcategories = user_profile.subcategories.all()
+
+    # Filter categories and subcategories
+    selected_category = request.GET.get('category')
+    selected_subcategory = request.GET.get('subcategory')
+
+    categories = ServiceCategory.objects.filter(subcategories__in=worker_subcategories).distinct()
+    subcategories = SubCategory.objects.filter(id__in=worker_subcategories)
+
+    orders = ServiceOrder.objects.filter(
+        subcategory__in=worker_subcategories, 
+        status='Looking for Nearby Worker'
+    )
+
+    if selected_category:
+        orders = orders.filter(subcategory__category_id=selected_category)
+    if selected_subcategory:
+        orders = orders.filter(subcategory_id=selected_subcategory)
+
+    context = {
+        'categories': categories,
+        'subcategories': subcategories,
+        'orders': orders,
+    }
+    return render(request, 'manage_job.html', context)
+
+@login_required
+def accept_order(request, order_id):
+    # Worker accepts the order
+    order = get_object_or_404(ServiceOrder, id=order_id, status='Looking for Nearby Worker')
+    order.status = 'Waiting for Nearby Worker'
+    order.worker = request.user.userprofile
+    order.save()
+    messages.success(request, "Order accepted successfully!")
+    return redirect('main:managejob')
+
+@login_required(login_url='/login/')
+def manage_order_status(request):
+    user_profile = request.user.userprofile
+
+    # Ensure the user is a worker
+    if user_profile.role != 'worker':
+        messages.error(request, "You are not authorized to view this page.")
+        return redirect('main:home')
+
+    # Fetch orders assigned to the worker
+    orders = ServiceOrder.objects.filter(worker=user_profile).exclude(status__in=['Order Completed', 'Order Canceled'])
+
+    # Update order status if a POST request is made
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        action = request.POST.get('action')
+        try:
+            order = ServiceOrder.objects.get(id=order_id, worker=user_profile)
+            if action == 'Arrived at Location' and order.status == 'Waiting for Worker to Depart':
+                order.status = 'Worker Arrived at Location'
+            elif action == 'Providing Service' and order.status == 'Worker Arrived at Location':
+                order.status = 'Service in Progress'
+            elif action == 'Service Completed' and order.status == 'Service in Progress':
+                order.status = 'Order Completed'
+            else:
+                messages.error(request, "Invalid action or order status.")
+                return redirect('main:manage_order_status')
+            order.save()
+            messages.success(request, f"Order status updated to: {order.status}.")
+        except ServiceOrder.DoesNotExist:
+            messages.error(request, "Order not found or not assigned to you.")
+        return redirect('main:manage_order_status')
+
+    context = {
+        'orders': orders,
+    }
+    return render(request, 'manage_order_status.html', context)

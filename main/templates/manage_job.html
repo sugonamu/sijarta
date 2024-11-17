@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage My Job{% endblock title %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">Manage My Job</h1>
+
+    <!-- Filter Section -->
+    <form method="GET" action="{% url 'main:managejob' %}" class="flex space-x-4 items-center mb-6">
+        <!-- Category Filter -->
+        <div>
+            <label for="categoryFilter" class="block text-sm font-medium text-gray-600">Category</label>
+            <select id="categoryFilter" name="category" class="p-2 border border-gray-300 rounded" onchange="this.form.submit()">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Subcategory Filter -->
+        <div>
+            <label for="subcategoryFilter" class="block text-sm font-medium text-gray-600">Subcategory</label>
+            <select id="subcategoryFilter" name="subcategory" class="p-2 border border-gray-300 rounded" onchange="this.form.submit()">
+                <option value="">All Subcategories</option>
+                {% for subcategory in subcategories %}
+                    <option value="{{ subcategory.id }}" {% if subcategory.id|stringformat:"s" == request.GET.subcategory %}selected{% endif %}>
+                        {{ subcategory.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Search</button>
+    </form>
+
+    <!-- Orders Section -->
+    <div class="space-y-4">
+        {% if orders %}
+            {% for order in orders %}
+                <div class="border border-gray-300 rounded bg-white p-4 flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold">{{ order.subcategory.name }}</h2>
+                        <p class="text-sm text-gray-600">User's Name: {{ order.user.username }}</p>
+                        <p class="text-sm text-gray-600">Order Date: {{ order.order_date }}</p>
+                        <p class="text-sm text-gray-600">Working Date: {{ order.working_date }}</p>
+                        <p class="text-sm text-gray-600">Session: {{ order.session }}</p>
+                        <p class="text-sm text-gray-600">Total Amount: Rp {{ order.total_amount }}</p>
+                    </div>
+                    <form method="POST" action="{% url 'main:accept_order' order.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="p-2 bg-green-500 text-white rounded hover:bg-green-600">Accept Order</button>
+                    </form>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-gray-600">No orders found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

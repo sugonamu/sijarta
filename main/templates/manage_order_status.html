@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Order Status{% endblock title %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">Manage Order Status</h1>
+
+    {% if orders %}
+        <div class="space-y-4">
+            {% for order in orders %}
+            <div class="border border-gray-300 rounded bg-white p-4 shadow">
+                <h2 class="text-xl font-bold mb-2">{{ order.subcategory.name }}</h2>
+                <p><strong>Order Date:</strong> {{ order.order_date }}</p>
+                <p><strong>Status:</strong> {{ order.status }}</p>
+                <p><strong>Total Amount:</strong> Rp {{ order.total_payment }}</p>
+
+                <!-- Action Buttons -->
+                <form method="POST" class="mt-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="order_id" value="{{ order.id }}">
+                    {% if order.status == "Waiting for Worker to Depart" %}
+                        <button type="submit" name="action" value="Arrived at Location" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Arrived at Location
+                        </button>
+                    {% elif order.status == "Worker Arrived at Location" %}
+                        <button type="submit" name="action" value="Providing Service" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Providing Service
+                        </button>
+                    {% elif order.status == "Service in Progress" %}
+                        <button type="submit" name="action" value="Service Completed" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                            Service Completed
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-gray-600">No active orders found.</p>
+    {% endif %}
+</div>
+
+{% endblock content %}

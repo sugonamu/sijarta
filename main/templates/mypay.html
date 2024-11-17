@@ -1,31 +1,53 @@
 {% extends 'base.html' %}
 
-{% block title %}Application Info{% endblock title %}
+{% block title %}MyPay{% endblock title %}
 
 {% block content %}
 {% include 'navbar.html' %}
-{% load static %}
 
-<div class="message-box flex flex-col items-center p-6 bg-gray-100 min-h-screen">
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <br>
-    <div class="icon text-6xl mb-4">🚧</div>
-    <h1 class="text-3xl font-bold mb-2">My Pay Page</h1>
-    <br>
-    <br>
-    <br>
-    <img src="{% static 'image/pensive.gif' %}" alt="We're Really Sorry" class="w-48 h-48 mb-4"/>
-    <br>
-    <br>
-    <br>
-    <a href="{% url 'main:home' %}">
-        <button class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-200">Back to Home</button>
-    </a>
-    <br>
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">MyPay</h1>
+
+    <!-- Top Section -->
+    <div class="flex justify-between items-center border border-gray-300 p-4 rounded bg-white mb-6">
+        <div class="flex items-center space-x-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-600">Phone Number</label>
+                <p class="text-lg font-bold text-gray-800">{{ user.username }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-600">Balance</label>
+                <p class="text-lg font-bold text-green-600">Rp {{ balance }}</p>
+            </div>
+        </div>
+        <!-- Transact Button: Link to MyPay Transactions -->
+        <a href="{% url 'main:mypay_transactions' %}" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Transact</a>
+    </div>
+
+    <!-- Transaction History Section -->
+    <div class="border border-gray-300 rounded bg-white p-4">
+        <h2 class="text-2xl font-semibold mb-4">Transaction History</h2>
+        {% if transactions %}
+            <div class="space-y-4">
+                {% for transaction in transactions %}
+                <div class="flex justify-between items-center border-b border-gray-300 pb-2">
+                    <div>
+                        <p class="text-lg font-bold {% if transaction.amount < 0 %}text-red-600{% else %}text-green-600{% endif %}">
+                            {{ transaction.amount|floatformat:2 }}
+                        </p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">{{ transaction.timestamp }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800">{{ transaction.get_transaction_type_display }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600">No transactions found.</p>
+        {% endif %}
+    </div>
 </div>
-
 {% endblock content %}

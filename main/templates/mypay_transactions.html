@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}MyPay Transactions{% endblock title %}
+
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">MyPay Transactions</h1>
+
+    <!-- Transaction Form -->
+    <div class="border border-gray-300 rounded bg-white p-6">
+        <h2 class="text-xl font-bold mb-4">Transaction Form</h2>
+        <form method="POST" action="{% url 'main:transact' %}">
+            {% csrf_token %}
+
+            <!-- Transaction Date -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-600">Transaction Date</label>
+                <p class="text-lg font-bold text-gray-800">{{ date }}</p>
+            </div>
+
+            <!-- User's Name -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-600">User's Name</label>
+                <p class="text-lg font-bold text-gray-800">{{ user.username }}</p>
+            </div>
+
+            <!-- MyPay Balance -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-600">MyPay Balance</label>
+                <p class="text-lg font-bold text-green-600">Rp {{ balance }}</p>
+            </div>
+
+            <!-- Transaction Category -->
+            <div class="mb-6">
+                <label for="transaction_type" class="block text-sm font-medium text-gray-600">Transaction Category</label>
+                <select name="transaction_type" id="transaction_type" class="p-2 border border-gray-300 rounded w-full" onchange="updateFormState()">
+                    <option value="">Select Transaction</option>
+                    <option value="TopUp">Top Up</option>
+                    <option value="ServicePayment">Service Payment</option>
+                    <option value="Transfer">Transfer</option>
+                    <option value="Withdrawal">Withdrawal</option>
+                </select>
+            </div>
+
+            <!-- Dynamic Form Fields -->
+            <div id="dynamicFields" class="mb-6"></div>
+
+            <!-- Submit and Cancel Buttons -->
+            <div class="flex justify-end space-x-4">
+                <a href="{% url 'main:mypay' %}" class="p-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</a>
+                <button type="submit" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Submit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function updateFormState() {
+        const transactionType = document.getElementById('transaction_type').value;
+        const dynamicFields = document.getElementById('dynamicFields');
+        let formContent = '';
+
+        // State 1: Top Up
+        if (transactionType === 'TopUp') {
+            formContent = `
+                <label for="amount" class="block text-sm font-medium text-gray-600">Amount</label>
+                <input type="number" name="amount" id="amount" min="0" step="0.01" class="p-2 border border-gray-300 rounded w-full mb-4">
+            `;
+        }
+        // State 2: Service Payment
+        else if (transactionType === 'ServicePayment') {
+            formContent = `
+                <label for="service_session" class="block text-sm font-medium text-gray-600">Service Session</label>
+                <select name="service_session" id="service_session" class="p-2 border border-gray-300 rounded w-full mb-4">
+                    <option value="">Select Service</option>
+                    {% for session in service_sessions %}
+                    <option value="{{ session.id }}">{{ session.name }} - Rp {{ session.price }}</option>
+                    {% endfor %}
+                </select>
+            `;
+        }
+        // State 3: Transfer
+        else if (transactionType === 'Transfer') {
+            formContent = `
+                <label for="recipient_phone" class="block text-sm font-medium text-gray-600">Recipient's Phone Number</label>
+                <input type="text" name="recipient_phone" id="recipient_phone" class="p-2 border border-gray-300 rounded w-full mb-4">
+                <label for="amount" class="block text-sm font-medium text-gray-600">Amount</label>
+                <input type="number" name="amount" id="amount" min="0" step="0.01" class="p-2 border border-gray-300 rounded w-full mb-4">
+            `;
+        }
+        // State 4: Withdrawal
+        else if (transactionType === 'Withdrawal') {
+            formContent = `
+                <label for="bank_name" class="block text-sm font-medium text-gray-600">Bank Name</label>
+                <select name="bank_name" id="bank_name" class="p-2 border border-gray-300 rounded w-full mb-4">
+                    <option value="GoPay">GoPay</option>
+                    <option value="OVO">OVO</option>
+                    <option value="BCA">Virtual Account BCA</option>
+                    <option value="BNI">Virtual Account BNI</option>
+                    <option value="Mandiri">Virtual Account Mandiri</option>
+                </select>
+                <label for="account_number" class="block text-sm font-medium text-gray-600">Account Number</label>
+                <input type="text" name="account_number" id="account_number" class="p-2 border border-gray-300 rounded w-full mb-4">
+                <label for="amount" class="block text-sm font-medium text-gray-600">Amount</label>
+                <input type="number" name="amount" id="amount" min="0" step="0.01" class="p-2 border border-gray-300 rounded w-full mb-4">
+            `;
+        }
+
+        dynamicFields.innerHTML = formContent;
+    }
+</script>
+{% endblock content %}

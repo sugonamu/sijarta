@@ -20,6 +20,13 @@ urlpatterns = [
     path('myorder/', views.myorder, name = 'myorder'),
     path('mypay/', views.mypay, name = 'mypay'),
     path('profile/', views.profile, name = 'profile'),
-    
-
+    path('mypay/', views.mypay, name='mypay'),
+    path('mypay/transactions/', views.mypay_transactions, name='mypay_transactions'),
+    path('service_jobs/', views.service_jobs, name='service_jobs'),
+    path('service_job_status/', views.service_job_status, name='service_job_status'),
+    path('transact/', views.transact, name='transact'),
+    path('mypay_transactions/', views.mypay_transactions, name='mypay_transactions'),
+    path('managejob/', views.managejob, name='managejob'),
+    path('accept_order/<int:order_id>/', views.accept_order, name='accept_order'),
+    path('manage_order_status/', views.manage_order_status, name='manage_order_status'),
 ]
