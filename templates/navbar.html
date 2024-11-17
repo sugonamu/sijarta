@@ -65,8 +65,8 @@
     </div>
 
         {% if user.is_authenticated %}
-            <a href="{% url 'main:error' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">MyPay</a>
-            <a href="{% url 'main:error' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Profile</a>
+            <a href="{% url 'main:mypay' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">MyPay</a>
+            <a href="{% url 'main:profile' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Profile</a>
 
             {% if user.userprofile.role == 'worker' %}
                 <a href="{% url 'main:worker' %}" class="mr-2">Home</a>

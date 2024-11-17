@@ -1,78 +1,123 @@
-{% extends "base.html" %}
-{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+        }
+        .profile {
+            border: 1px solid #ccc;
+            padding: 20px;
+            width: 45%;
+        }
+        h2 {
+            color: #4d88ff;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"], input[type="password"], input[type="date"], select {
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        .button-container {
+            text-align: right;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4d88ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>User Profile</h1>
 
-{% block title %}User Profile{% endblock title %}
+    {% if user.userprofile.role == 'user' %}
+    <div class="profile">
+        <h2>User</h2>
+        <form>
+            <label for="user-name">Name:</label>
+            <input type="text" id="user-name" name="user-name">
+            
+            <label for="user-password">Password:</label>
+            <input type="password" id="user-password" name="user-password">
 
-{% block content %}
-{% include 'navbar.html' %}
+            <label for="user-sex">Sex:</label>
+            <select id="user-sex" name="user-sex">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+            </select>
 
-<div class="bg-[#EEE8D8] text-gray-800 p-6 font-['Inter'] min-h-screen flex justify-center items-center"> 
-    <div class="bg-[#E3CDB6] p-10 rounded-2xl max-w-4xl w-full mx-auto mt-10 flex flex-col md:flex-row gap-8">
-        
-        <!-- Form Section -->
-        <div class="md:w-1/2 w-full">
-            <h1 class="text-3xl font-bold text-[#D4AA7D] mb-6">Update Profile</h1>
+            <label for="user-phone">Phone Number:</label>
+            <input type="text" id="user-phone" name="user-phone">
 
-            <!-- Django message display -->
-            {% if messages %}
-                {% for message in messages %}
-                    {% if message.tags == 'success' %}
-                        <div class="p-4 mb-4 text-white bg-green-500 rounded-lg">
-                            {{ message }}
-                        </div>
-                    {% elif message.tags == 'error' %}
-                        <div class="p-4 mb-4 text-white bg-red-500 rounded-lg">
-                            {{ message }}
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
+            <label for="user-birth">Birth Date:</label>
+            <input type="date" id="user-birth" name="user-birth">
 
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
+            <label for="user-address">Address:</label>
+            <input type="text" id="user-address" name="user-address">
 
-                <div class="mb-5">
-                    <label class="block font-semibold text-gray-600 mb-2">{{ u_form.username.label_tag }}</label>
-                    {{ u_form.username|add_class:"w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" }}
-                    {% if u_form.username.errors %}
-                        <div class="text-red-500 text-sm mt-1">{{ u_form.username.errors }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="mb-5">
-                    <label for="first_name" class="block font-semibold text-gray-600 mb-2">{{ u_form.first_name.label_tag }}</label>
-                    {{ u_form.first_name|add_class:"w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" }}
-                </div>
-
-                <div class="mb-5">
-                    <label for="last_name" class="block font-semibold text-gray-600 mb-2">{{ u_form.last_name.label_tag }}</label>
-                    {{ u_form.last_name|add_class:"w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" }}
-                </div>
-
-                <div class="mb-5">
-                    <label for="email" class="block font-semibold text-gray-600 mb-2">{{ u_form.email.label_tag }}</label>
-                    {{ u_form.email|add_class:"w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" }}
-                </div>
-
-                <div class="mb-5">
-                    <label for="profile-picture" class="block font-semibold text-gray-600 mb-2">Change Avatar</label>
-                    <input type="file" name="image" id="file-upload" accept="image/*" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#5865F2] file:text-white hover:file:bg-[#D4AA7D]">
-                </div>
-
-                <button type="submit" class="w-full bg-[#b89576] hover:bg-[#D4AA7D] text-white py-3 px-6 rounded-lg font-semibold mt-4 transition-all">Update Profile</button>
-            </form>
-        </div>
-
-        <!-- Profile Preview Section -->
-        <div class="md:w-1/2 w-full bg-[#D8CFC6] p-8 rounded-xl text-center shadow-lg">
-            <h2 class="text-2xl font-bold text-[#D4AA7D] mb-4">Preview</h2>
-
-            <img src="{{ profile.user.profile.image.url }}" alt="Profile Picture" class="w-36 h-36 rounded-full mx-auto mb-4 border-4 border-[#E3CDB6] shadow-lg object-cover">
-
-            <p class="text-xl font-medium text-gray-800 mb-1">{{ profile.user.username }}</p>
-            <p class="text-lg text-gray-700 mb-1">{{ profile.user.first_name }} {{ profile.user.last_name }}</p>
-            <p class="text-sm text-gray-600">{{ profile.user.email }}</p>
-        </div>
+            <div class="button-container">
+                <button type="submit">Update</button>
+            </div>
+        </form>
     </div>
-</div>
-{% endblock content %}
+    {% elif user.userprofile.role == 'worker' %}
+    <div class="profile">
+        <h2>Worker</h2>
+        <form>
+            <label for="worker-name">Name:</label>
+            <input type="text" id="worker-name" name="worker-name">
+
+            <label for="worker-password">Password:</label>
+            <input type="password" id="worker-password" name="worker-password">
+
+            <label for="worker-sex">Sex:</label>
+            <select id="worker-sex" name="worker-sex">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+            </select>
+
+            <label for="worker-phone">Phone Number:</label>
+            <input type="text" id="worker-phone" name="worker-phone">
+
+            <label for="worker-birth">Birth Date:</label>
+            <input type="date" id="worker-birth" name="worker-birth">
+
+            <label for="worker-address">Address:</label>
+            <input type="text" id="worker-address" name="worker-address">
+
+            <label for="worker-bank">Bank Name:</label>
+            <input type="text" id="worker-bank" name="worker-bank">
+
+            <label for="worker-account">Account Number:</label>
+            <input type="text" id="worker-account" name="worker-account">
+
+            <label for="worker-npwp">NPWP:</label>
+            <input type="text" id="worker-npwp" name="worker-npwp">
+
+            <label for="worker-image">Image URL:</label>
+            <input type="text" id="worker-image" name="worker-image">
+
+            <div class="button-container">
+                <button type="submit">Update</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</body>
+</html>

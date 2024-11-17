@@ -170,3 +170,9 @@ def managejob(request):
 
 def myorder(request):
     return render(request, 'myorder.html')
+
+def mypay(request):
+    return render(request, 'mypay.html')
+
+def profile(request):
+    return render(request, 'profile.html')

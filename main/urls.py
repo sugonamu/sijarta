@@ -18,5 +18,8 @@ urlpatterns = [
     path('managejob/', views.managejob, name = 'managejob'),
     path('manageorder/', views.manageorder, name = 'manageorder'),
     path('myorder/', views.myorder, name = 'myorder'),
+    path('mypay/', views.mypay, name = 'mypay'),
+    path('profile/', views.profile, name = 'profile'),
+    
 
 ]
