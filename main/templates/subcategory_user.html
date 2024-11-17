@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% include 'navbar.html' %}
 
 {% block title %}Subcategory Detail{% endblock %}
 
@@ -15,10 +16,13 @@
     </ul>
 
     <h2 class="text-2xl font-semibold mb-4">Testimonials</h2>
-    <ul>
+    <div class="bg-white shadow-md rounded p-4 mb-4">
         {% for testimonial in testimonials %}
-        <li>{{ testimonial.user.username }}: {{ testimonial.rating }} stars - {{ testimonial.comment }}</li>
+            <p class="font-semibold">Rating: {{ testimonial.rating }}/5</p>
+            <p>{{ testimonial.comment }}</p>
+        {% empty %}
+            <p>No testimonials available for this subcategory.</p>
         {% endfor %}
-    </ul>
+    </div>
 </div>
 {% endblock %}

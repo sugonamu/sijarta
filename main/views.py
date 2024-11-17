@@ -34,7 +34,6 @@ def home(request):
         ).distinct()
 
     return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
-
 @login_required(login_url='/login/')
 def subcategory_detail(request, subcategory_id):
     subcategory = get_object_or_404(SubCategory, id=subcategory_id)
@@ -42,37 +41,46 @@ def subcategory_detail(request, subcategory_id):
     # Get the user's profile to check their role
     user_profile = UserProfile.objects.get(user=request.user)
     
-    # Fetch testimonials for the subcategory
-    testimonials = subcategory.testimonials.all()
-
     if user_profile.role == 'user':
-        # If the user is a regular user, show available workers and testimonials
-        workers = subcategory.workers.all()  # Get workers for this subcategory
+        # Fetch workers and service sessions for the user view
+        workers = subcategory.workers.all()  # Assuming there is a Many-to-Many relationship between Workers and SubCategory
+        testimonials = subcategory.testimonials.all()  # Testimonials for the subcategory
+        sessions = subcategory.sessions.all()  # Service sessions for the subcategory
         
         context = {
             'subcategory': subcategory,
             'workers': workers,
             'testimonials': testimonials,
+            'sessions': sessions,  # Pass service sessions to the context
         }
         return render(request, 'subcategory_user.html', context)
 
     elif user_profile.role == 'worker':
-        # If the user is a worker, show workers and testimonials
-        workers = subcategory.workers.all()  # Get workers for this subcategory
-        
-        # Check if the current worker is already in the subcategory
-        if user_profile in subcategory.workers.all():
-            joined_message = "You have already joined this service category."
-        else:
-            joined_message = None  # Worker has not joined this subcategory yet
+        # Fetch workers and service sessions for the worker view
+        workers = subcategory.workers.all()  # Assuming the same logic as above for workers
+        testimonials = subcategory.testimonials.all()  # Testimonials for the subcategory
+        sessions = subcategory.sessions.all()  # Service sessions for the subcategory
 
         context = {
             'subcategory': subcategory,
             'workers': workers,
             'testimonials': testimonials,
-            'joined_message': joined_message,
+            'sessions': sessions,  # Pass service sessions to the context
         }
         return render(request, 'subcategory_worker.html', context)
+    
+@login_required
+def join_service_category(request, subcategory_id):
+    subcategory = SubCategory.objects.get(id=subcategory_id)
+    user_profile = UserProfile.objects.get(user=request.user)
+
+    # Check if the worker is not already joined to the subcategory
+    if user_profile not in subcategory.workers.all():
+        # Add the worker to the subcategory
+        subcategory.workers.add(user_profile)
+
+    # Redirect to the same subcategory page
+    return redirect('subcategory_detail', subcategory_id=subcategory.id)
 
 def success(request):
     return render(request, 'success.html')

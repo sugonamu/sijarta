@@ -33,3 +33,11 @@ class Testimonial(models.Model):
 
     def __str__(self):
         return f"Testimonial by {self.user.username} for {self.subcategory.name}"
+
+class ServiceSession(models.Model):
+    subcategory = models.ForeignKey('SubCategory', on_delete=models.CASCADE, related_name='sessions')
+    session = models.IntegerField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return f"Session {self.session} for {self.subcategory.name} at {self.price}"
