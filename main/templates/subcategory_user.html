@@ -12,6 +12,8 @@
     <ul>
         {% for worker in workers %}
         <li>{{ worker.user.username }}</li>  <!-- Display the worker's username -->
+        {% empty %}
+        <li>No workers available for this service category.</li>
         {% endfor %}
     </ul>
 

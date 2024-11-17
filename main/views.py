@@ -46,38 +46,41 @@ def home(request):
 @login_required(login_url='/login/')
 def subcategory_detail(request, subcategory_id):
     subcategory = get_object_or_404(SubCategory, id=subcategory_id)
-    
-    # Get the user's profile to check their role
     user_profile = UserProfile.objects.get(user=request.user)
-    
-    if user_profile.role == 'user':
-        # Fetch workers and service sessions for the user view
-        workers = subcategory.workers.all()  # Assuming there is a Many-to-Many relationship between Workers and SubCategory
-        testimonials = subcategory.testimonials.all()  # Testimonials for the subcategory
-        sessions = subcategory.sessions.all()  # Service sessions for the subcategory
-        
-        context = {
-            'subcategory': subcategory,
-            'workers': workers,
-            'testimonials': testimonials,
-            'sessions': sessions,  # Pass service sessions to the context
-        }
-        return render(request, 'subcategory_user.html', context)
 
-    elif user_profile.role == 'worker':
-        # Fetch workers and service sessions for the worker view
-        workers = subcategory.workers.all()  # Assuming the same logic as above for workers
-        testimonials = subcategory.testimonials.all()  # Testimonials for the subcategory
-        sessions = subcategory.sessions.all()  # Service sessions for the subcategory
+    # Fetch workers, testimonials, and sessions for rendering in the template
+    workers = subcategory.workers.all()
+    testimonials = subcategory.testimonials.all()
+    sessions = subcategory.sessions.all()
 
-        context = {
-            'subcategory': subcategory,
-            'workers': workers,
-            'testimonials': testimonials,
-            'sessions': sessions,  # Pass service sessions to the context
-        }
+    # Handle "Join Service Category" action for workers
+    if request.method == 'POST' and user_profile.role == 'worker':
+        # Check if the worker is already in the list
+        if user_profile not in subcategory.workers.all():
+            subcategory.workers.add(user_profile)  # Add the worker to the service category
+            subcategory.save()
+
+        # Redirect to the same page to update the list of workers
+        if user_profile.role=="worker":
+            return redirect('subcategory_worker.html', subcategory_id=subcategory.id)
+        else:
+            return redirect('subcategory_user.html', subcategory_id=subcategory.id)
+
+
+    # Render different templates based on role
+    context = {
+        'subcategory': subcategory,
+        'workers': workers,
+        'testimonials': testimonials,
+        'sessions': sessions,
+        'user_profile': user_profile
+    }
+
+    if user_profile.role == 'worker':
         return render(request, 'subcategory_worker.html', context)
-    
+    else:
+        return render(request, 'subcategory_user.html', context)
+ 
 @login_required
 def join_service_category(request, subcategory_id):
     subcategory = SubCategory.objects.get(id=subcategory_id)

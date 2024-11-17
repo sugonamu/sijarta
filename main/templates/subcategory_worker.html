@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
-{% block title %}Subcategory Detail{% endblock %}
+{% block title %}Subcategory Detail - Worker{% endblock %}
 
 {% block content %}
 <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
     <h1 class="text-3xl font-bold mb-6">{{ subcategory.name }}</h1>
     <p>{{ subcategory.description }}</p>
 
-    <h2 class="text-2xl font-semibold mb-4">Service Category: {{ subcategory.category.name }}</h2>  <!-- Display the parent service category -->
+    <h2 class="text-2xl font-semibold mb-4">Service Category: {{ subcategory.category.name }}</h2>
     
     <h2 class="text-2xl font-semibold mb-4">Available Workers</h2>
     <ul>
         {% for worker in workers %}
-        <li>{{ worker.user.username }}</li>  <!-- Display the worker's username -->
+        <li>{{ worker.user.username }}</li>
         {% empty %}
-        <li>No workers available for this service category.</li>  <!-- Message when no workers are available -->
+        <li>No workers available for this service category.</li>
         {% endfor %}
     </ul>
 
@@ -26,23 +26,22 @@
 
     <h2 class="text-2xl font-semibold mb-4">Available Service Sessions</h2>
     <ul>
-        {% for session in subcategory.sessions.all %}
+        {% for session in sessions %}
         <li>Session {{ session.session }} - Price: ${{ session.price }}</li>
         {% empty %}
         <li>No service sessions available for this subcategory.</li>
         {% endfor %}
     </ul>
 
-    {% if user_profile.role == 'worker' %}
-        {% if user_profile not in subcategory.workers.all %}
-            <!-- Show the "Join" button for workers if not already part of the service category -->
-            <form method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary">Join Service Category</button>
-            </form>
-        {% else %}
-            <p>You have already joined this service category.</p>
-        {% endif %}
+    {% if user_profile not in subcategory.workers.all %}
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary border-2 border-gray-500 px-4 py-2 rounded">
+            Join Service Category
+        </button>
+    </form>
+    {% else %}
+        <p>You have already joined this service category.</p>
     {% endif %}
 </div>
 {% endblock %}
