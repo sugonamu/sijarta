@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import Q
 
-@login_required
+@login_required(login_url='/login/')
 def home(request):
     categories = ServiceCategory.objects.prefetch_related('subcategories').all()
     

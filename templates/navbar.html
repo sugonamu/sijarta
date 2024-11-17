@@ -56,14 +56,14 @@
                 <span style="color: #B89B7C;">Chill</span>
             </span>
         </a>
-      
     </div>
-    <a href="{% url 'main:home' %}" class="mr-2"> Home</a>
+    <a href="{% url 'main:home' %}" class="mr-2">Home</a>
+    <a href="/discounts/" class="mr-2">Discount</a>
     <div class="flex items-center space-x-4">
         {% if user.is_authenticated %}
             <span class="mr-4">Welcome, {{ user.username }}</span>
             <a href="{% url 'main:logout' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Logout</a>
-            {% else %}
+        {% else %}
             <a href="{% url 'main:login' %}" class="login rounded-lg px-4 py-2 transition duration-300">Login</a>
             <a href="{% url 'main:register' %}" class="register rounded-lg px-4 py-2 transition duration-300" style="background-color: #997A57;">Register</a>
         {% endif %}

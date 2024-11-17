@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Testimonial{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">Add Testimonial for {{ subcategory.name }}</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-4">
+            <label for="rating" class="block text-lg font-medium">Rating (1-10)</label>
+            <input type="number" name="rating" min="1" max="5" required class="w-full p-2 border rounded-lg mt-2" placeholder="Enter Rating">
+        </div>
+        
+        <div class="mb-4">
+            <label for="comment" class="block text-lg font-medium">Comment</label>
+            <textarea name="comment" rows="4" required class="w-full p-2 border rounded-lg mt-2" placeholder="Enter your comment"></textarea>
+        </div>
+
+        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded-lg">Submit Testimonial</button>
+    </form>
+</div>
+{% endblock %}
