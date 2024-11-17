@@ -28,7 +28,7 @@ class SubCategory(models.Model):
 class Testimonial(models.Model):
     rating = models.PositiveIntegerField(choices=[(i, str(i)) for i in range(1, 11)])
     comment = models.TextField()
-    subcategory = models.ForeignKey(Subcategory, on_delete=models.CASCADE, related_name='testimonials')
+    subcategory = models.ForeignKey(SubCategory, on_delete=models.CASCADE, related_name='testimonials')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='testimonials')
 
     def __str__(self):
