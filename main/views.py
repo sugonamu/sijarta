@@ -146,3 +146,18 @@ def logout(request):
     response = HttpResponseRedirect(reverse('main:login'))
     response.delete_cookie('last_login')
     return response
+
+def error(request):
+    return render(request, 'error.html')
+
+def discounts(request):
+    return render(request, 'discounts.html')
+
+def manageorder(request):
+    return render(request, 'manageorder.html')
+
+def managejob(request):
+    return render(request, 'managejob.html')
+
+def myorder(request):
+    return render(request, 'myorder.html')

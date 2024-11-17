@@ -50,19 +50,29 @@
 
 <nav class="bg-white text-gray-800 p-4 flex justify-between items-center shadow-lg">
     <div class="flex items-center">
-            <span class="self-center text-xl font-bold text-gray-800">
-                <span style="color: #B89B7C;">Bali</span>
-                <span style="font-size: 1.5em; color: #B89B7C;">N</span>
-                <span style="color: #B89B7C;">Chill</span>
-            </span>
-        </a>
+        <span class="self-center text-xl font-bold text-gray-800">
+            <span style="color: #B89B7C;">Bali</span>
+            <span style="font-size: 1.5em; color: #B89B7C;">N</span>
+            <span style="color: #B89B7C;">Chill</span>
+        </span>
     </div>
-    <a href="{% url 'main:home' %}" class="mr-2">Home</a>
-    <a href="/discounts/" class="mr-2">Discount</a>
+
     <div class="flex items-center space-x-4">
         {% if user.is_authenticated %}
+            <a href="{% url 'main:error' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">MyPay</a>
+            <a href="{% url 'main:error' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Profile</a>
             <span class="mr-4">Welcome, {{ user.username }}</span>
             <a href="{% url 'main:logout' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Logout</a>
+
+            {% if user.role == 'worker' %}
+                <a href="{% url 'main:worker' %}" class="mr-2">Home</a>
+                <a href="{% url 'main:manageorder' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage Order Status</a>
+                <a href="{% url 'main:managejob' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage my Job</a>
+            {% elif user.role == 'user' %}
+                <a href="{% url 'main:success' %}" class="mr-2">Home</a>
+                <a href="{% url 'main:myorder' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">My Order</a>
+                <a href="{% url 'main:discounts' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Discounts</a>
+            {% endif %}
         {% else %}
             <a href="{% url 'main:login' %}" class="login rounded-lg px-4 py-2 transition duration-300">Login</a>
             <a href="{% url 'main:register' %}" class="register rounded-lg px-4 py-2 transition duration-300" style="background-color: #997A57;">Register</a>

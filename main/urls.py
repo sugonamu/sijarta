@@ -12,6 +12,11 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),
     path('subcategory/<int:subcategory_id>/', views.subcategory_detail, name='subcategory_detail'),
     path('join_service_category/<int:subcategory_id>/', views.join_service_category, name='join_service_category'),
-    path('subcategory/<int:subcategory_id>/', views.subcategory_detail, name='subcategory_detail')
+    path('subcategory/<int:subcategory_id>/', views.subcategory_detail, name='subcategory_detail'),
+    path('error/', views.error, name = 'error' ),
+    path('discounts/', views.discounts, name = 'discounts'),
+    path('managejob/', views.managejob, name = 'managejob'),
+    path('manageorder/', views.manageorder, name = 'manageorder'),
+    path('myorder/', views.myorder, name = 'myorder'),
 
 ]
