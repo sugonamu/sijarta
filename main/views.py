@@ -16,8 +16,13 @@ from django.db.models import Q
 
 @login_required(login_url='/login/')
 def home(request):
+    # Retrieve the logged-in user's profile to check their role
+    user_profile = UserProfile.objects.get(user=request.user)
+    user_role = user_profile.role
+
+    # Fetch categories with their subcategories
     categories = ServiceCategory.objects.prefetch_related('subcategories').all()
-    
+
     # Get selected category and search term from request
     selected_category = request.GET.get('category', '')
     search_term = request.GET.get('search', '')
@@ -25,15 +30,19 @@ def home(request):
     # Filter categories if a specific category is selected
     if selected_category:
         categories = categories.filter(id=selected_category)
-    
+
     # Apply search filter if a search term is entered
     if search_term:
         categories = categories.filter(
-            Q(name__icontains=search_term) | 
+            Q(name__icontains=search_term) |
             Q(subcategories__name__icontains=search_term)
         ).distinct()
 
-    return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
+    # Determine which template to render based on the user's role
+    if user_role == 'user':
+        return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
+    elif user_role == 'worker':
+        return render(request, 'worker.html', {'categories': categories, 'search_term': search_term})
 @login_required(login_url='/login/')
 def subcategory_detail(request, subcategory_id):
     subcategory = get_object_or_404(SubCategory, id=subcategory_id)
