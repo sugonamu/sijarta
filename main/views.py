@@ -42,7 +42,7 @@ def home(request):
     if user_role == 'user':
         return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
     elif user_role == 'worker':
-        return render(request, 'worker.html', {'categories': categories, 'search_term': search_term})
+        return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
 @login_required(login_url='/login/')
 def subcategory_detail(request, subcategory_id):
     subcategory = get_object_or_404(SubCategory, id=subcategory_id)
