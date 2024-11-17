@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Subcategory Detail{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">{{ subcategory.name }}</h1>
+    <p>{{ subcategory.description }}</p>
+
+    <h2 class="text-2xl font-semibold mb-4">Available Workers</h2>
+    <ul>
+        {% for worker in workers %}
+        <li>{{ worker.user.username }}</li>  <!-- Display the worker's username -->
+        {% endfor %}
+    </ul>
+
+    <h2 class="text-2xl font-semibold mb-4">Testimonials</h2>
+    <ul>
+        {% for testimonial in testimonials %}
+        <li>{{ testimonial.user.username }}: {{ testimonial.rating }} stars - {{ testimonial.comment }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

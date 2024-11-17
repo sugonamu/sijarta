@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect,get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from .forms import LoginForm
-from .models import UserProfile,ServiceCategory,SubCategory
+from .models import UserProfile,ServiceCategory,SubCategory,Testimonial
 import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -35,11 +35,44 @@ def home(request):
 
     return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
 
-
+@login_required(login_url='/login/')
 def subcategory_detail(request, subcategory_id):
     subcategory = get_object_or_404(SubCategory, id=subcategory_id)
-    return render(request, 'subcategory_detail.html', {'subcategory': subcategory})
+    
+    # Get the user's profile to check their role
+    user_profile = UserProfile.objects.get(user=request.user)
+    
+    # Fetch testimonials for the subcategory
+    testimonials = subcategory.testimonials.all()
 
+    if user_profile.role == 'user':
+        # If the user is a regular user, show available workers and testimonials
+        workers = subcategory.workers.all()  # Get workers for this subcategory
+        
+        context = {
+            'subcategory': subcategory,
+            'workers': workers,
+            'testimonials': testimonials,
+        }
+        return render(request, 'subcategory_user.html', context)
+
+    elif user_profile.role == 'worker':
+        # If the user is a worker, show workers and testimonials
+        workers = subcategory.workers.all()  # Get workers for this subcategory
+        
+        # Check if the current worker is already in the subcategory
+        if user_profile in subcategory.workers.all():
+            joined_message = "You have already joined this service category."
+        else:
+            joined_message = None  # Worker has not joined this subcategory yet
+
+        context = {
+            'subcategory': subcategory,
+            'workers': workers,
+            'testimonials': testimonials,
+            'joined_message': joined_message,
+        }
+        return render(request, 'subcategory_worker.html', context)
 
 def success(request):
     return render(request, 'success.html')

@@ -9,7 +9,6 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
-
 class ServiceCategory(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -21,7 +20,8 @@ class SubCategory(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     category = models.ForeignKey(ServiceCategory, related_name='subcategories', on_delete=models.CASCADE)
-    
+    workers = models.ManyToManyField(UserProfile, related_name='subcategories', blank=True)  # Many-to-many relationship with workers
+
     def __str__(self):
         return self.name
 
