@@ -11,15 +11,15 @@
             font-size: 1rem;
             color: #4A4A4A;
             font-family: 'Inter', sans-serif;
-            letter-spacing: 0.05em; /* Added letter spacing for better readability */
-            margin-right: 1rem; /* Added spacing between elements */
+            letter-spacing: 0.05em;
+            margin-right: 1rem;
         }
 
         nav button {
             font-size: 0.875rem;
             font-family: 'Inter', sans-serif;
-            letter-spacing: 0.05em; /* Added letter spacing */
-            padding: 0.5rem 1rem; /* Added padding for better button size */
+            letter-spacing: 0.05em;
+            padding: 0.5rem 1rem;
         }
 
         button.bg-black {
@@ -42,17 +42,34 @@
         }
 
         button.register {
-            background-color: #4A90E2;
-            color: #fff;
+            background-color: #FFC58C; /* Light peach color */
+            color: #4A4A4A;
         }
 
         button.register:hover {
-            background-color: #357ABD;
+            background-color: #FFD9AE; /* Slightly brighter peach on hover */
+            color: #4A4A4A;
         }
 
         nav .welcome-message {
-            margin-right: 2rem; /* Extra spacing for the welcome message */
-            letter-spacing: 0.1em; /* More distinct letter spacing */
+            margin-right: 2rem;
+            letter-spacing: 0.1em;
+        }
+
+        /* For non-authenticated users */
+        .auth-buttons a {
+            font-size: 0.875rem;
+            color: #4A4A4A;
+            background-color: #FFD4B2; /* Soft pastel orange */
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            margin-left: 0.5rem;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+        }
+
+        .auth-buttons a:hover {
+            background-color: #FFE5CC; /* Lighter pastel orange on hover */
         }
     </style>
 </head>
@@ -72,6 +89,7 @@
         </span>
     </div>
 
+    <div class="flex items-center">
         {% if user.is_authenticated %}
             <a href="{% url 'main:mypay' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">MyPay</a>
             <a href="{% url 'main:profile' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Profile</a>
@@ -88,8 +106,10 @@
             <span class="welcome-message">Welcome, {{ user.username }}</span>
             <a href="{% url 'main:logout' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Logout</a>
         {% else %}
-            <a href="{% url 'main:login' %}" class="login rounded-lg px-4 py-2 transition duration-300">Login</a>
-            <a href="{% url 'main:register' %}" class="register rounded-lg px-4 py-2 transition duration-300" style="background-color: #997A57;">Register</a>
+            <div class="auth-buttons">
+                <a href="{% url 'main:login' %}">Login</a>
+                <a href="{% url 'main:register' %}">Register</a>
+            </div>
         {% endif %}
     </div>
 </nav>

@@ -15,11 +15,17 @@ from decimal import Decimal
 from django.utils.timezone import now
 
 
-@login_required(login_url='/login/')
 def home(request):
-    # Retrieve the logged-in user's profile to check their role
-    user_profile = UserProfile.objects.get(user=request.user)
-    user_role = user_profile.role
+    user_profile = None
+    user_role = None
+
+    # Check if the user is authenticated before querying the UserProfile model
+    if request.user.is_authenticated:
+        try:
+            user_profile = UserProfile.objects.get(user=request.user)
+            user_role = user_profile.role
+        except UserProfile.DoesNotExist:
+            pass  # Handle cases where the UserProfile does not exist
 
     # Fetch categories with their subcategories
     categories = ServiceCategory.objects.prefetch_related('subcategories').all()
@@ -39,11 +45,14 @@ def home(request):
             Q(subcategories__name__icontains=search_term)
         ).distinct()
 
-    # Determine which template to render based on the user's role
-    if user_role == 'user':
-        return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
-    elif user_role == 'worker':
-        return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
+    # Prepare the context for rendering
+    context = {
+        'categories': categories,
+        'search_term': search_term,
+        'user_profile': user_profile,
+    }
+    return render(request, 'success.html', context)
+
 
 @login_required(login_url='/login/')
 def subcategory_detail(request, subcategory_id):
