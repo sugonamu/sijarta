@@ -39,28 +39,51 @@
         <button type="submit" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Search</button>
     </form>
 
-    <!-- Orders Section -->
     <div class="space-y-4">
         {% if orders %}
             {% for order in orders %}
-                <div class="border border-gray-300 rounded bg-white p-4 flex justify-between items-center">
-                    <div>
-                        <h2 class="text-xl font-bold">{{ order.subcategory.name }}</h2>
-                        <p class="text-sm text-gray-600">User's Name: {{ order.user.username }}</p>
-                        <p class="text-sm text-gray-600">Order Date: {{ order.order_date }}</p>
-                        <p class="text-sm text-gray-600">Working Date: {{ order.working_date }}</p>
-                        <p class="text-sm text-gray-600">Session: {{ order.session }}</p>
-                        <p class="text-sm text-gray-600">Total Amount: Rp {{ order.total_amount }}</p>
+                <div class="border border-gray-300 rounded bg-white p-4 flex items-center justify-between">
+                    <!-- Left Section -->
+                    <div class="flex-grow">
+                        <div class="flex items-center space-x-4">
+                            <!-- Subcategory Name -->
+                            <div class="font-bold text-lg">{{ order.subcategory.name }}</div>
+                            <!-- User's Name -->
+                            <div class="text-sm text-gray-600">User's Name: {{ order.user.user.username }}</div>
+                        </div>
+                        <div class="mt-2 grid grid-cols-3 gap-4 text-sm text-gray-600">
+                            <!-- Order Date -->
+                            <div>
+                                <p class="font-medium">Order Date</p>
+                                <p>{{ order.order_date }}</p>
+                            </div>
+                            <!-- Working Date -->
+                            <div>
+                                <p class="font-medium">Working Date</p>
+                                <p>{{ order.working_date }}</p>
+                            </div>
+                            <!-- Session -->
+                            <div>
+                                <p class="font-medium">Session</p>
+                                <p>{{ order.session }}</p>
+                            </div>
+                        </div>
                     </div>
-                    <form method="POST" action="{% url 'main:accept_order' order.id %}">
-                        {% csrf_token %}
-                        <button type="submit" class="p-2 bg-green-500 text-white rounded hover:bg-green-600">Accept Order</button>
-                    </form>
+                    <!-- Right Section -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Total Amount -->
+                        <div class="text-gray-700 font-medium">
+                            Total Amount: Rp {{ order.total_payment }}
+                        </div>
+                        <!-- Accept Order Button -->
+                        <button class="p-2 bg-green-500 text-white rounded hover:bg-green-600">
+                            Accept Order
+                        </button>
+                    </div>
                 </div>
             {% endfor %}
         {% else %}
             <p class="text-gray-600">No orders found.</p>
         {% endif %}
     </div>
-</div>
 {% endblock content %}

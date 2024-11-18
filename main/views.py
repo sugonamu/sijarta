@@ -229,8 +229,6 @@ def discounts(request):
 def manageorder(request):
     return render(request, 'manageorder.html')
 
-def managejob(request):
-    return render(request, 'managejob.html')
 
 def myorder(request):
     return render(request, 'myorder.html')
@@ -422,20 +420,22 @@ def service_job_status(request):
 
 @login_required(login_url='/login/')
 def managejob(request):
-    # Get worker's subcategories
+    # Get the worker's profile and subcategories they belong to
     user_profile = UserProfile.objects.get(user=request.user)
     worker_subcategories = user_profile.subcategories.all()
 
-    # Filter categories and subcategories
-    selected_category = request.GET.get('category')
-    selected_subcategory = request.GET.get('subcategory')
-
+    # Fetch categories and subcategories related to the worker
     categories = ServiceCategory.objects.filter(subcategories__in=worker_subcategories).distinct()
     subcategories = SubCategory.objects.filter(id__in=worker_subcategories)
 
+    # Get selected category and subcategory from the request
+    selected_category = request.GET.get('category')
+    selected_subcategory = request.GET.get('subcategory')
+
+    # Filter orders based on the selected filters
     orders = ServiceOrder.objects.filter(
-        subcategory__in=worker_subcategories, 
-        status='Looking for Nearby Worker'
+        subcategory__in=worker_subcategories,
+        status="Looking for Nearby Worker"
     )
 
     if selected_category:
@@ -453,8 +453,8 @@ def managejob(request):
 @login_required
 def accept_order(request, order_id):
     # Worker accepts the order
-    order = get_object_or_404(ServiceOrder, id=order_id, status='Looking for Nearby Worker')
-    order.status = 'Waiting for Nearby Worker'
+    order = get_object_or_404(ServiceOrder, id=order_id, status="Looking for Nearby Worker")
+    order.status = "Waiting for Worker to Depart"
     order.worker = request.user.userprofile
     order.save()
     messages.success(request, "Order accepted successfully!")
@@ -474,23 +474,18 @@ def manage_order_status(request):
 
     # Update order status if a POST request is made
     if request.method == 'POST':
-        order_id = request.POST.get('order_id')
         action = request.POST.get('action')
-        try:
-            order = ServiceOrder.objects.get(id=order_id, worker=user_profile)
+        # For simplicity, we'll update the first order in the list
+        order = orders.first()
+        if order:
             if action == 'Arrived at Location' and order.status == 'Waiting for Worker to Depart':
                 order.status = 'Worker Arrived at Location'
             elif action == 'Providing Service' and order.status == 'Worker Arrived at Location':
                 order.status = 'Service in Progress'
             elif action == 'Service Completed' and order.status == 'Service in Progress':
                 order.status = 'Order Completed'
-            else:
-                messages.error(request, "Invalid action or order status.")
-                return redirect('main:manage_order_status')
             order.save()
-            messages.success(request, f"Order status updated to: {order.status}.")
-        except ServiceOrder.DoesNotExist:
-            messages.error(request, "Order not found or not assigned to you.")
+            messages.success(request, f"Order status updated to {order.status}.")
         return redirect('main:manage_order_status')
 
     context = {

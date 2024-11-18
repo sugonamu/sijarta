@@ -48,9 +48,9 @@
             <div id="dynamicFields" class="mb-6"></div>
 
             <!-- Submit and Cancel Buttons -->
-            <div class="flex justify-end space-x-4">
+            <div class="flex justify-between items-center">
                 <a href="{% url 'main:mypay' %}" class="p-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Cancel</a>
-                <button type="submit" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Submit</button>
+                <button id="submitButton" type="submit" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Submit</button>
             </div>
         </form>
     </div>
@@ -60,6 +60,7 @@
     function updateFormState() {
         const transactionType = document.getElementById('transaction_type').value;
         const dynamicFields = document.getElementById('dynamicFields');
+        const submitButton = document.getElementById('submitButton');
         let formContent = '';
 
         // State 1: Top Up
@@ -68,6 +69,7 @@
                 <label for="amount" class="block text-sm font-medium text-gray-600">Amount</label>
                 <input type="number" name="amount" id="amount" min="0" step="0.01" class="p-2 border border-gray-300 rounded w-full mb-4">
             `;
+            submitButton.textContent = 'Top Up';
         }
         // State 2: Service Payment
         else if (transactionType === 'ServicePayment') {
@@ -80,6 +82,7 @@
                     {% endfor %}
                 </select>
             `;
+            submitButton.textContent = 'Purchase';
         }
         // State 3: Transfer
         else if (transactionType === 'Transfer') {
@@ -89,6 +92,7 @@
                 <label for="amount" class="block text-sm font-medium text-gray-600">Amount</label>
                 <input type="number" name="amount" id="amount" min="0" step="0.01" class="p-2 border border-gray-300 rounded w-full mb-4">
             `;
+            submitButton.textContent = 'Purchase';
         }
         // State 4: Withdrawal
         else if (transactionType === 'Withdrawal') {
@@ -106,6 +110,7 @@
                 <label for="amount" class="block text-sm font-medium text-gray-600">Amount</label>
                 <input type="number" name="amount" id="amount" min="0" step="0.01" class="p-2 border border-gray-300 rounded w-full mb-4">
             `;
+            submitButton.textContent = 'Purchase';
         }
 
         dynamicFields.innerHTML = formContent;
