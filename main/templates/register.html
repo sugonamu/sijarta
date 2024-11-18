@@ -9,42 +9,83 @@
     <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
         <h1 class="text-3xl font-bold text-center" style="color: #b89576;">Register</h1>
 
+        <!-- Modal for role selection -->
+        <div id="roleModal" class="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
+                <h2 class="text-xl font-semibold text-center mb-4">Select Your Role</h2>
+                <div class="flex justify-center space-x-4">
+                    <button onclick="selectRole('user')" class="px-6 py-2 bg-blue-500 text-white rounded-md">User</button>
+                    <button onclick="selectRole('worker')" class="px-6 py-2 bg-green-500 text-white rounded-md">Worker</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form for registration -->
         <form method="POST" class="register-form" id="register-form">
             {% csrf_token %}
-            
-            {% for field in form %}
+
+            <!-- Name, Password, Sex, Phone, Address, Birthdate fields common to both -->
             <div class="mb-4">
-                <label for="{{ field.id_for_label }}" class="block text-sm font-medium" style="color: #554a35;">{{ field.label }}</label>
-                {{ field }}
-                {% for error in field.errors %}
-                <p class="mt-1 text-xs text-red-600">{{ error }}</p>
-                {% endfor %}
-            </div>
-            {% endfor %}
-
-            <!-- Password Criteria -->
-            <div class="password-criteria mt-4">
-                <ul class="list-disc list-inside" style="font-size: 0.85rem;">
-                    <li id="criteria-similarity" style="color: #8b8577;">Your password can’t be too similar to your other personal information.</li>
-                    <li id="criteria-length" style="color: #8b8577;">Your password must contain at least 8 characters.</li>
-                    <li id="criteria-common" style="color:#8b8577;">Your password can’t be a commonly used password.</li>
-                    <li id="criteria-numeric" style="color: #8b8577;">Your password can’t be entirely numeric.</li>
-                </ul>
+                <label for="name" class="block text-sm font-medium" style="color: #554a35;">Name</label>
+                <input type="text" id="name" name="name" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
             </div>
 
-            <!-- Message for password criteria -->
-            <p id="password-criteria-message" class="mt-2 text-red-600" style="font-size: 0.85rem;">Please ensure your password meets the required criteria.</p>
+            <div class="mb-4">
+                <label for="password" class="block text-sm font-medium" style="color: #554a35;">Password</label>
+                <input type="password" id="password" name="password" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+            </div>
 
-            <div class="mb-4 mt-6">
-              <label for="role" class="block text-sm font-medium" style="color: #554a35;">Register as:</label>
-              <select name="role" id="role" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
-                  <option value="user">User</option>
-                  <option value="worker">Worker</option>
-              </select>
-              {% if form.role.errors %}
-                  <p class="mt-1 text-xs text-red-600">{{ form.role.errors }}</p>
-              {% endif %}
-          </div>
+            <div class="mb-4">
+                <label for="sex" class="block text-sm font-medium" style="color: #554a35;">Sex</label>
+                <select id="sex" name="sex" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="phone" class="block text-sm font-medium" style="color: #554a35;">Phone Number</label>
+                <input type="text" id="phone" name="phone" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="address" class="block text-sm font-medium" style="color: #554a35;">Address</label>
+                <input type="text" id="address" name="address" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="birthdate" class="block text-sm font-medium" style="color: #554a35;">Birthdate</label>
+                <input type="date" id="birthdate" name="birthdate" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+            </div>
+
+            <!-- Worker-specific fields (hidden initially) -->
+            <div id="worker-fields" class="hidden">
+                <div class="mb-4">
+                    <label for="bank_name" class="block text-sm font-medium" style="color: #554a35;">Bank Name</label>
+                    <select id="bank_name" name="bank_name" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+                        <option value="GoPay">GoPay</option>
+                        <option value="OVO">OVO</option>
+                        <option value="Virtual Account BCA">Virtual Account BCA</option>
+                        <option value="Virtual Account BNI">Virtual Account BNI</option>
+                        <option value="Virtual Account Mandiri">Virtual Account Mandiri</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label for="account_number" class="block text-sm font-medium" style="color: #554a35;">Account Number</label>
+                    <input type="text" id="account_number" name="account_number" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+                </div>
+
+                <div class="mb-4">
+                    <label for="npwp" class="block text-sm font-medium" style="color: #554a35;">NPWP</label>
+                    <input type="text" id="npwp" name="npwp" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
+                </div>
+
+                <div class="mb-4">
+                    <label for="image_url" class="block text-sm font-medium" style="color: #554a35;">Image URL</label>
+                    <input type="url" id="image_url" name="image_url" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
+                </div>
+            </div>
 
             <div>
                 <input type="submit" name="submit" value="Register" 
@@ -55,116 +96,25 @@
     </div>
 </div>
 
-<!-- JavaScript for hiding password criteria -->
+<!-- JavaScript for handling modal popup, role selection, and form toggle -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const passwordInput = document.getElementById('id_password1');
-        const criteriaLength = document.getElementById('criteria-length');
-        const criteriaSimilarity = document.getElementById('criteria-similarity');
-        const criteriaCommon = document.getElementById('criteria-common');
-        const criteriaNumeric = document.getElementById('criteria-numeric');
-        const passwordMessage = document.getElementById('password-criteria-message');
+        // Show the role selection modal on page load
+        const roleModal = document.getElementById('roleModal');
+        roleModal.style.display = 'flex'; // Show the modal
 
-        const usernameInput = document.getElementById('id_username'); 
-        const userInfo = []; 
+        // Function to set the role and close the modal
+        window.selectRole = function(role) {
+            // Close the role selection modal
+            roleModal.style.display = 'none';
 
-        usernameInput.addEventListener('input', function() {
-            userInfo[0] = usernameInput.value; 
-            checkPasswordCriteria(); 
-        });
-
-        function checkPasswordCriteria() {
-            const password = passwordInput.value;
-
-            // Show all criteria if the password is blank
-            if (password.length === 0) {
-                criteriaLength.style.display = 'block'; 
-                criteriaNumeric.style.display = 'block'; 
-                criteriaCommon.style.display = 'block'; 
-                criteriaSimilarity.style.display = 'block'; 
-                passwordMessage.style.display = 'none'; // Hide the message
-                return; // Stop further checks if password is blank
-            }
-
-            let isCriteriaMet = true;
-
-            // Check length
-            if (password.length >= 8) {
-                criteriaLength.style.display = 'none'; 
+            // Toggle the fields based on the selected role
+            if (role === 'worker') {
+                document.getElementById('worker-fields').classList.remove('hidden');
             } else {
-                criteriaLength.style.display = 'block'; 
-                isCriteriaMet = false; // Update criteria check
+                document.getElementById('worker-fields').classList.add('hidden');
             }
-
-            // Check numeric
-            if (/^\d+$/.test(password)) {
-                criteriaNumeric.style.display = 'block'; 
-                isCriteriaMet = false; // Update criteria check
-            } else {
-                criteriaNumeric.style.display = 'none'; 
-            }
-
-            // Check common password
-            if (isCommonPassword(password)) {
-                criteriaCommon.style.display = 'block'; 
-                isCriteriaMet = false; // Update criteria check
-            } else {
-                criteriaCommon.style.display = 'none'; 
-            }
-
-            // Check similarity
-            if (isSimilarToUserInfo(password)) {
-                criteriaSimilarity.style.display = 'block'; 
-                isCriteriaMet = false; // Update criteria check
-            } else {
-                criteriaSimilarity.style.display = 'none'; 
-            }
-
-            // Update message visibility based on criteria check
-            if (!isCriteriaMet) {
-                passwordMessage.style.display = 'none'; // Hide the message by default
-            } else {
-                passwordMessage.style.display = 'none'; // Hide message if criteria met
-            }
-        }
-
-        function isCommonPassword(password) {
-            const commonPasswords = [
-                'password', 'abcdefghijklmno', 'abcdabcd', 'trustno1', 'princess',
-                'qwerty', 'abc123', 'letmein', 'iloveyou', 'admin',
-                'welcome', 'monkey', '1234567', '123123', 'football',
-                'password1', 'qwertyuiop', 'password1', 'sunshine', 
-                'trustno1', 'iloveyou2', 'dragon', 'password123', 
-                'baseball', 'abcdef', 'asdfgh', 'zxcvbn', 'qwerty123',
-                'letmein', 'monkey', 'football', 'superman', 
-                'starwars', 'hello', 'lovely', 'ninja', 'george', 
-                '!@#$%^&*()', 'qwertyuiop', 'zxcvbnm', 'abcabcabc'
-            ];
-            return commonPasswords.includes(password.toLowerCase());
-        }
-
-        function isSimilarToUserInfo(password) {
-            const username = userInfo[0] ? userInfo[0].toLowerCase() : '';
-            return password.toLowerCase().includes(username);
-        }
-
-        passwordInput.addEventListener('input', checkPasswordCriteria);
-
-        // Form submission handling
-        const form = document.getElementById('register-form');
-        form.addEventListener('submit', function(event) {
-            checkPasswordCriteria(); // Ensure criteria are checked on submit
-            // Prevent form submission if criteria are not met
-            if (criteriaLength.style.display === 'block' ||
-                criteriaSimilarity.style.display === 'block' ||
-                criteriaCommon.style.display === 'block' ||
-                criteriaNumeric.style.display === 'block') {
-                event.preventDefault(); // Stop form from submitting
-                passwordMessage.style.display = 'block'; // Show message
-            } else {
-                passwordMessage.style.display = 'none'; // Hide message if criteria met
-            }
-        });
+        };
     });
 </script>
 
