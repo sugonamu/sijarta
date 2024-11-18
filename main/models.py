@@ -81,3 +81,20 @@ class ServiceOrder(models.Model):
 
     def __str__(self):
         return f"Order {self.id} - {self.status}"
+
+class Promo(models.Model):
+    code = models.CharField(max_length=20, unique=True)
+    discount = models.DecimalField(max_digits=5, decimal_places=2)
+    valid_until = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Promo {self.code} - {self.discount}%"
+
+class Voucher(models.Model):
+    code = models.CharField(max_length=20, unique=True)
+    discount = models.DecimalField(max_digits=5, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    valid_until = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Voucher {self.code} - {self.discount}% for {self.price}"
