@@ -12,6 +12,7 @@
         {% endif %}
     {% empty %}
         <p>No testimonials available for this subcategory.</p>
+        <a href='/add_testimony/<int:subcategory.id>'>Add Testimonial</a>
     {% endfor %}
 </div>
 {% endblock %}

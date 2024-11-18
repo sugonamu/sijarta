@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from .forms import LoginForm
-from .models import UserProfile,ServiceCategory,SubCategory,Testimonial, MyPayTransaction, ServiceOrder, ServiceSession
+from .models import UserProfile,ServiceCategory,SubCategory,Testimonial, MyPayTransaction, ServiceOrder, ServiceSession, Promo, Voucher
 import datetime
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate, login, logout as auth_logout
@@ -163,8 +163,14 @@ def logout(request):
 def error(request):
     return render(request, 'error.html')
 
+@login_required
 def discounts(request):
-    return render(request, 'discounts.html')
+    return render(request, 'discounts.html', {
+        'vouchers': Voucher.objects.all(),
+        'promos': Promo.objects.all(),
+        'user': request.user.userprofile
+    })
+
 
 def manageorder(request):
     return render(request, 'manageorder.html')
@@ -439,9 +445,9 @@ def manage_order_status(request):
     return render(request, 'manage_order_status.html', context)
 
 @login_required(login_url='/login/')
-def AddTestimonial(req, subcategory_name):
+def AddTestimonial(req, subcategory_id):
     '''Add a Testimonial to Subcategory'''
-    SubCat = SubCategory.objects.get(name=subcategory_name)
+    SubCat = SubCategory.objects.get(id=subcategory_id)
 
     if req.method == 'POST':
 
@@ -457,6 +463,6 @@ def AddTestimonial(req, subcategory_name):
                 subcategory=SubCat,
                 user=req.user
             )
-            return redirect('subcategory_detail', subcategory_name=subcategory_name)
+            return redirect(f'/subcategory/{subcategory_id}/')
 
     return render(req, 'add_testimonial.html', {'subcategory': SubCat})

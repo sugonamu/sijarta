@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ServiceCategory, SubCategory, Testimonial, ServiceSession
+from .models import ServiceCategory, SubCategory, Testimonial, ServiceSession, Promo, Voucher
 
 class SubCategoryAdmin(admin.ModelAdmin):
     # Remove 'workers' from both the form and the displayed fields
@@ -17,3 +17,5 @@ admin.site.register(ServiceCategory)
 admin.site.register(SubCategory, SubCategoryAdmin)  # Register with custom admin
 admin.site.register(Testimonial)
 admin.site.register(ServiceSession)
+admin.site.register(Promo)
+admin.site.register(Voucher)

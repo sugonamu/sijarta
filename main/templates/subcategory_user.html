@@ -20,7 +20,7 @@
     <h2 class="text-2xl font-semibold mb-4">Testimonials</h2>
     <div class="bg-white shadow-md rounded p-4 mb-4">
         {% for testimonial in testimonials %}
-            <p class="font-semibold">Rating: {{ testimonial.rating }}/5</p>
+            <p class="font-semibold">Rating: {{ testimonial.rating }}/10</p>
             <p>{{ testimonial.comment }}</p>
         {% empty %}
             <p>No testimonials available for this subcategory.</p>

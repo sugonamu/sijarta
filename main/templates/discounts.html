@@ -10,18 +10,18 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {% for voucher in vouchers %}
         <div class="bg-white p-4 shadow-lg rounded-lg">
-            <h2 class="text-xl font-semibold mb-2">{{ voucher.name }}</h2>
+            <h2 class="text-xl font-semibold mb-2">{{ voucher.code }}</h2>
             <p class="mb-4">{{ voucher.description }}</p>
             <p class="font-semibold text-lg mb-4">Price: ${{ voucher.price }}</p>
-            <button onclick="checkBalanceAndBuy()" class="bg-blue-500 text-white py-2 px-4 rounded-lg w-full">Buy</button>
+            <button onclick="checkBalanceAndBuy({{ voucher.price }})" class="bg-blue-500 text-white py-2 px-4 rounded-lg w-full">Buy</button>
         </div>
         {% endfor %}
 
         {% for promo in promos %}
         <div class="bg-white p-4 shadow-lg rounded-lg">
-            <h2 class="text-xl font-semibold mb-2">{{ promo.name }}</h2>
-            <p class="font-semibold text-lg mb-4">Code: {{ promo.code }}</p>
-            <button onclick="checkBalanceAndBuy()" class="bg-blue-500 text-white py-2 px-4 rounded-lg w-full">Apply</button>
+            <h2 class="text-xl font-semibold mb-2">{{ promo.code }}</h2>
+            <p class="font-semibold text-lg mb-4">Discount: {{ promo.discount }}%</p>
+            <button onclick="applyPromo('{{ promo.code }}')" class="bg-blue-500 text-white py-2 px-4 rounded-lg w-full">Apply</button>
         </div>
         {% endfor %}
     </div>
@@ -47,7 +47,7 @@
 <!-- Modals Styling -->
 <style>
     .modal {
-        display: none; /* Hidden by default */
+        display: none;
         position: fixed;
         top: 50%;
         left: 50%;
@@ -60,14 +60,13 @@
     }
 </style>
 
-
 <!-- JavaScript for Modals -->
 <script>
     function checkBalanceAndBuy(voucherPrice) {
         const successModal = document.getElementById('successModal');
         const failureModal = document.getElementById('failureModal');
-        successModal.style.display = 'none'; /* Reset */
-        failureModal.style.display = 'none'; /* Reset */
+        successModal.style.display = 'none'; 
+        failureModal.style.display = 'none'; 
 
         const userBalance = {{ user.mypay_balance }};
         if (userBalance >= voucherPrice) {
@@ -75,6 +74,17 @@
         } else {
             failureModal.style.display = 'block';
         }
+    }
+
+    function closeModal() {
+        const successModal = document.getElementById('successModal');
+        const failureModal = document.getElementById('failureModal');
+        successModal.style.display = 'none';
+        failureModal.style.display = 'none';
+    }
+
+    function applyPromo(promoCode) {
+        alert("Promo code " + promoCode + " applied!");
     }
 </script>
 {% endblock %}
