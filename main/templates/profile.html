@@ -1,9 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+{% extends 'base.html' %}
+
+{% block title %}Profile{% endblock title %}
+
+{% block content %}
+{% include 'navbar.html' %}
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -119,5 +119,4 @@
         </form>
     </div>
     {% endif %}
-</body>
-</html>
+{% endblock content %}
