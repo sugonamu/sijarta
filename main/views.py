@@ -13,6 +13,7 @@ from django.db import IntegrityError
 from django.db.models import Q
 from decimal import Decimal
 from django.utils.timezone import now
+from datetime import date
 
 
 def home(request):
@@ -52,6 +53,11 @@ def home(request):
         'user_profile': user_profile,
     }
     return render(request, 'success.html', context)
+def booking_service(request):
+    context = {
+        'current_date': date.today().strftime('%d %B %Y'),  # Formats date as "Day Month Year"
+    }
+    return render(request, 'booking_services.html', context)
 
 @login_required
 def worker_profile(request):

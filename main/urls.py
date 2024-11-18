@@ -31,4 +31,5 @@ urlpatterns = [
     path('manage_order_status/', views.manage_order_status, name='manage_order_status'),
     path('add_testimony/<int:subcategory_id>/', views.AddTestimonial, name='add_testimonial'),
     path('worker-profile/', views.worker_profile, name='worker_profile'),
+    path('booking-service/', views.booking_service, name='booking_service')
 ]
