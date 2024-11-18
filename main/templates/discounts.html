@@ -44,16 +44,37 @@
     </div>
 </div>
 
+<!-- Modals Styling -->
+<style>
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        padding: 20px;
+        border-radius: 8px;
+    }
+</style>
+
+
 <!-- JavaScript for Modals -->
 <script>
     function checkBalanceAndBuy(voucherPrice) {
-        const userBalance = {{ user.mypay_balance }};
-        userBalance >= voucherPrice ? document.getElementById('successModal').style.display = 'block' : document.getElementById('failureModal').style.display = 'block';
-    }
+        const successModal = document.getElementById('successModal');
+        const failureModal = document.getElementById('failureModal');
+        successModal.style.display = 'none'; /* Reset */
+        failureModal.style.display = 'none'; /* Reset */
 
-    function closeModal() {
-        document.getElementById('successModal').style.display = 'none';
-        document.getElementById('failureModal').style.display = 'none';
+        const userBalance = {{ user.mypay_balance }};
+        if (userBalance >= voucherPrice) {
+            successModal.style.display = 'block';
+        } else {
+            failureModal.style.display = 'block';
+        }
     }
 </script>
 {% endblock %}
