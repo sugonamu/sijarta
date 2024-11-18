@@ -44,6 +44,7 @@ def home(request):
         return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
     elif user_role == 'worker':
         return render(request, 'success.html', {'categories': categories, 'search_term': search_term})
+
 @login_required(login_url='/login/')
 def subcategory_detail(request, subcategory_id):
     subcategory = get_object_or_404(SubCategory, id=subcategory_id)
@@ -125,7 +126,6 @@ def login_view(request):
 
     return render(request, 'login.html', {'form': form})
 
-
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
@@ -174,7 +174,6 @@ def managejob(request):
 
 def myorder(request):
     return render(request, 'myorder.html')
-
 
 def profile(request):
     return render(request, 'profile.html')
@@ -288,7 +287,6 @@ def mypay_transactions(request):
     }
     return render(request, 'mypay_transactions.html', context)
     
-
 @login_required(login_url='/login/')
 def service_jobs(request):
     user_profile = UserProfile.objects.get(user=request.user)
@@ -319,7 +317,6 @@ def service_jobs(request):
         'available_orders': available_orders,
     }
     return render(request, 'service_jobs.html', context)
-
 
 @login_required(login_url='/login/')
 def service_job_status(request):
@@ -362,7 +359,6 @@ def service_job_status(request):
         'active_orders': active_orders,
     }
     return render(request, 'service_job_status.html', context)
-
 
 @login_required(login_url='/login/')
 def managejob(request):
@@ -441,3 +437,26 @@ def manage_order_status(request):
         'orders': orders,
     }
     return render(request, 'manage_order_status.html', context)
+
+@login_required(login_url='/login/')
+def AddTestimonial(req, subcategory_name):
+    '''Add a Testimonial to Subcategory'''
+    SubCat = SubCategory.objects.get(name=subcategory_name)
+
+    if req.method == 'POST':
+
+        '''Fetch Rating and Comment'''
+        Rating = req.POST.get('rating') 
+        Comment = req.POST.get('comment') 
+
+        '''Ensure Data'''
+        if Rating and Comment:
+            Testimonial.objects.create(
+                rating=int(Rating),
+                comment=Comment,
+                subcategory=SubCat,
+                user=req.user
+            )
+            return redirect('subcategory_detail', subcategory_name=subcategory_name)
+
+    return render(req, 'add_testimonial.html', {'subcategory': SubCat})
