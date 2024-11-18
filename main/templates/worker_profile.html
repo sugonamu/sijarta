@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% include 'navbar.html' %}
+
+{% block title %}Worker Profile{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">Worker Profile</h1>
+    
+    <div class="bg-white shadow-md rounded p-6">
+        <p><strong>Name:</strong> {{ worker.name }}</p>
+        <p><strong>Rate:</strong> {{ worker.rate }}</p>
+        <p><strong>Finished Order Count:</strong> {{ worker.finished_order_count }}</p>
+        <p><strong>Phone Number:</strong> {{ worker.phone_number }}</p>
+        <p><strong>Birth Date:</strong> {{ worker.birth_date }}</p>
+        <p><strong>Address:</strong> {{ worker.address }}</p>
+    </div>
+</div>
+{% endblock %}

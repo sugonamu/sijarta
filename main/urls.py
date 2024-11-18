@@ -29,5 +29,6 @@ urlpatterns = [
     path('managejob/', views.managejob, name='managejob'),
     path('accept_order/<int:order_id>/', views.accept_order, name='accept_order'),
     path('manage_order_status/', views.manage_order_status, name='manage_order_status'),
-    path('add_testimony/<int:subcategory_id>/', views.AddTestimonial, name='add_testimonial')
+    path('add_testimony/<int:subcategory_id>/', views.AddTestimonial, name='add_testimonial'),
+    path('worker-profile/', views.worker_profile, name='worker_profile'),
 ]

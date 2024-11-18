@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
-{% include 'navbar.html' %}
 
 {% block title %}Subcategory Detail{% endblock %}
 
 {% block content %}
+{% include 'navbar.html' %}
 <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h2 class="text-2xl font-semibold mb-4">Service Category: {{ subcategory.category.name }}</h2>
     <h1 class="text-3xl font-bold mb-6">{{ subcategory.name }}</h1>
     <p>{{ subcategory.description }}</p>
 
@@ -26,5 +27,19 @@
             <p>No testimonials available for this subcategory.</p>
         {% endfor %}
     </div>
+
+    <h2 class="text-2xl font-semibold mb-4">Available Service Sessions</h2>
+    <ul>
+        {% for session in sessions %}
+        <li class="flex items-center justify-between mb-2">
+            <span>Session {{ session.session }} - Price: ${{ session.price }}</span>
+            <button class="btn btn-primary border-2 border-gray-500 px-4 py-2 rounded">
+                Book Service
+            </button>
+        </li>
+        {% empty %}
+        <li>No service sessions available for this subcategory.</li>
+        {% endfor %}
+    </ul>
 </div>
 {% endblock %}

@@ -2,6 +2,7 @@
 {% block title %}Subcategory Detail - Worker{% endblock %}
 
 {% block content %}
+{% include 'navbar.html' %}
 <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
     <h1 class="text-3xl font-bold mb-6">{{ subcategory.name }}</h1>
     <p>{{ subcategory.description }}</p>

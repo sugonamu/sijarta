@@ -95,7 +95,7 @@
             <a href="{% url 'main:profile' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Profile</a>
 
             {% if user.userprofile.role == 'worker' %}
-                <a href="{% url 'main:worker' %}" class="mr-2">Home</a>
+                <a href="{% url 'main:success' %}" class="mr-2">Home</a>
                 <a href="{% url 'main:manage_order_status' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage Order Status</a>
                 <a href="{% url 'main:managejob' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage My Job</a>
             {% elif user.userprofile.role == 'user' %}

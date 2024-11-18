@@ -53,7 +53,18 @@ def home(request):
     }
     return render(request, 'success.html', context)
 
-
+@login_required
+def worker_profile(request):
+    # Example: Replace these fields with actual database queries for the logged-in worker
+    worker = {
+        'name': UserProfile.objects.get(user=request.user),
+        'rate': '7/10',
+        'finished_order_count': 3,
+        'phone_number': '081281412990',
+        'birth_date': '7 November 1980',
+        'address': 'Grove Street',
+    }
+    return render(request, 'worker_profile.html', {'worker': worker})
 @login_required(login_url='/login/')
 def subcategory_detail(request, subcategory_id):
     subcategory = get_object_or_404(SubCategory, id=subcategory_id)
