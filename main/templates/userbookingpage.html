@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+
+{% block title %}User Bookings{% endblock %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">Your Bookings</h1>
+
+    <div class="bg-white shadow-md rounded p-6">
+        <h2 class="text-2xl font-semibold mb-4">Booking List</h2>
+
+        <!-- Loop through bookings -->
+        {% for booking in bookings %}
+        <div class="flex justify-between items-center mb-4 p-4 border-b">
+            <div class="flex flex-col">
+                <p><strong>Subcategory:</strong> {{ booking.subcategory }}</p>
+                <p><strong>Service Session:</strong> {{ booking.service_session }}</p>
+                <p><strong>Total Payment:</strong> {{ booking.total_payment }}</p>
+                <p><strong>Assigned Worker:</strong> {{ booking.worker }}</p>
+                <p><strong>Status:</strong> {{ booking.status }}</p>
+            </div>
+            <button class="px-4 py-2 rounded 
+                          {% if booking.status == 'Order Completed' %} 
+                            bg-blue-500 hover:bg-blue-600 text-white 
+                          {% else %}
+                            bg-red-500 hover:bg-red-600 text-white
+                          {% endif %}">
+                {% if booking.status == "Waiting for payment" or booking.status == "Searching for Nearest Workers" %}
+                    Cancel
+                {% elif booking.status == "Order Completed" %}
+                    Add Testimony
+                {% endif %}
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

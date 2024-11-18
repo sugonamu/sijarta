@@ -53,6 +53,34 @@ def home(request):
         'user_profile': user_profile,
     }
     return render(request, 'success.html', context)
+
+def user_booking_page(request):
+    # Example hardcoded data, replace with actual database queries later
+    bookings = [
+        {
+            'subcategory': 'Subcategory 1',
+            'service_session': 'Service Session 3',
+            'total_payment': 'Rp 1,000,000',
+            'worker': 'jontheworker',
+            'status': 'Waiting for payment',
+        },
+        {
+            'subcategory': 'Subcategory 2',
+            'service_session': 'Service Session 2',
+            'total_payment': 'Rp 2,000,000',
+            'worker': 'robtheworker',
+            'status': 'Order Completed',
+        },
+        {
+            'subcategory': 'Subcategory 3',
+            'service_session': 'Service Session 1',
+            'total_payment': 'Rp 1,000,000',
+            'worker': 'None',
+            'status': 'Searching for Nearest Workers',
+        },
+    ]
+
+    return render(request, 'userbookingpage.html', {'bookings': bookings})
 def booking_service(request):
     context = {
         'current_date': date.today().strftime('%d %B %Y'),  # Formats date as "Day Month Year"
