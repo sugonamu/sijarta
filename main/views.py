@@ -7,6 +7,11 @@ from django.contrib.auth.hashers import make_password, check_password
 from .utils import authenticate_user, get_db_connection,get_service_categories,get_service_subcategories,get_service_sessions_by_subcategory,get_testimonials_query
 from django.contrib import messages
 
+from django.db import connection
+import uuid
+from django.utils import timezone
+
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -116,4 +121,179 @@ def subcategory_user(request, subcategory_name):
         'subcategory_name': subcategory_name,
         'grouped_sessions': grouped_sessions,
         'testimonials': testimonials,
+    })
+
+
+def mypay_view(request):
+    user_id = request.session.get('user_id')
+    user_role = request.session.get('user_role')
+    if not user_id:
+        return redirect('main:login')
+
+    conn = get_db_connection()
+    transactions = []
+    balance = 0
+    try:
+        with conn.cursor() as cursor:
+            # Get the user's MyPay balance
+            cursor.execute("SELECT MyPayBalance FROM sijarta.users WHERE Id = %s", [user_id])
+            row = cursor.fetchone()
+            if row:
+                balance = row[0]
+
+            # Get the user's transaction history
+            cursor.execute("""
+                SELECT t.Date, t.Nominal, c.CategoryName 
+                FROM sijarta.tr_mypay t
+                JOIN sijarta.tr_mypay_category c ON t.CategoryId = c.Id
+                WHERE t.UserId = %s
+                ORDER BY t.Date DESC
+            """, [user_id])
+            rows = cursor.fetchall()
+            for r in rows:
+                transactions.append({
+                    'date': r[0],
+                    'nominal': r[1],
+                    'category': r[2]
+                })
+    finally:
+        conn.close()
+
+    return render(request, 'mypay.html', {
+        'balance': balance,
+        'transactions': transactions,
+    })
+
+
+def mypay_transaction_view(request):
+    user_id = request.session.get('user_id')
+    user_role = request.session.get('user_role')
+    if not user_id:
+        return redirect('main:login')
+
+    service_orders = []
+    # If user is a customer, fetch their service orders to pay for
+    if user_role == 'customer':
+        with connection.cursor() as cursor:
+            # Example: Fetch all service orders of this user not yet paid (adjust conditions as needed)
+            cursor.execute("""
+                SELECT Id, TotalPrice
+                FROM sijarta.tr_service_order
+                WHERE customerId = %s
+                AND Id NOT IN (
+                    SELECT serviceTrId 
+                    FROM sijarta.tr_order_status 
+                    WHERE statusId = (SELECT id FROM sijarta.order_status WHERE status = 'Completed')
+                )
+            """, [user_id])
+            rows = cursor.fetchall()
+            for row in rows:
+                service_orders.append({'id': row[0], 'totalprice': row[1]})
+
+    if request.method == 'POST':
+        category = request.POST.get('category')
+
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # Fetch user current balance
+                cursor.execute("SELECT MyPayBalance FROM sijarta.users WHERE Id = %s", [user_id])
+                row = cursor.fetchone()
+                if row:
+                    user_balance = row[0]
+                else:
+                    user_balance = 0
+
+                if category == 'topup':
+                    amount = float(request.POST.get('topup_amount', 0))
+                    if amount > 0:
+                        # Update user balance
+                        cursor.execute("UPDATE sijarta.users SET MyPayBalance = MyPayBalance + %s WHERE Id = %s", [amount, user_id])
+                        # Insert transaction record
+                        cursor.execute("""
+                            INSERT INTO sijarta.tr_mypay (Id, UserId, Date, Nominal, CategoryId)
+                            VALUES (gen_random_uuid(), %s, CURRENT_DATE, %s, 
+                                    (SELECT Id FROM sijarta.tr_mypay_category WHERE CategoryName = 'topup MyPay'))
+                        """, [user_id, amount])
+                        messages.success(request, 'Top-up successful!')
+                    else:
+                        messages.error(request, 'Invalid top-up amount.')
+
+                elif category == 'service_payment' and user_role == 'customer':
+                    service_order_id = request.POST.get('service_order_id')
+                    # Get the service price
+                    cursor.execute("SELECT TotalPrice FROM sijarta.tr_service_order WHERE Id = %s", [service_order_id])
+                    price = cursor.fetchone()[0]
+                    if price <= user_balance:
+                        # Deduct from user's balance
+                        cursor.execute("UPDATE sijarta.users SET MyPayBalance = MyPayBalance - %s WHERE Id = %s", [price, user_id])
+                        # Insert transaction record
+                        cursor.execute("""
+                            INSERT INTO sijarta.tr_mypay (Id, UserId, Date, Nominal, CategoryId)
+                            VALUES (gen_random_uuid(), %s, CURRENT_DATE, -%s, 
+                                    (SELECT Id FROM sijarta.tr_mypay_category WHERE CategoryName = 'pay for service transaction'))
+                        """, [user_id, price])
+                        messages.success(request, 'Service payment successful!')
+                    else:
+                        messages.error(request, 'Insufficient balance to pay for service.')
+
+                elif category == 'transfer':
+                    recipient_phone = request.POST.get('recipient_phone')
+                    transfer_amount = float(request.POST.get('transfer_amount', 0))
+                    if transfer_amount > 0 and transfer_amount <= user_balance:
+                        # Get recipient ID
+                        cursor.execute("SELECT Id FROM sijarta.users WHERE phoneNum = %s", [recipient_phone])
+                        recipient = cursor.fetchone()
+                        if recipient:
+                            recipient_id = recipient[0]
+                            # Deduct from user
+                            cursor.execute("UPDATE sijarta.users SET MyPayBalance = MyPayBalance - %s WHERE Id = %s", [transfer_amount, user_id])
+                            # Add to recipient
+                            cursor.execute("UPDATE sijarta.users SET MyPayBalance = MyPayBalance + %s WHERE Id = %s", [transfer_amount, recipient_id])
+                            # Insert transaction for sender
+                            cursor.execute("""
+                                INSERT INTO sijarta.tr_mypay (Id, UserId, Date, Nominal, CategoryId)
+                                VALUES (gen_random_uuid(), %s, CURRENT_DATE, -%s, 
+                                        (SELECT Id FROM sijarta.tr_mypay_category WHERE CategoryName = 'transfer MyPay to another user'))
+                            """, [user_id, transfer_amount])
+                            # Insert transaction for receiver
+                            cursor.execute("""
+                                INSERT INTO sijarta.tr_mypay (Id, UserId, Date, Nominal, CategoryId)
+                                VALUES (gen_random_uuid(), %s, CURRENT_DATE, %s, 
+                                        (SELECT Id FROM sijarta.tr_mypay_category WHERE CategoryName = 'receive service transaction honorarium'))
+                            """, [recipient_id, transfer_amount])
+                            messages.success(request, 'Transfer successful!')
+                        else:
+                            messages.error(request, 'Recipient not found.')
+                    else:
+                        messages.error(request, 'Invalid or insufficient amount for transfer.')
+
+                elif category == 'withdrawal':
+                    bank_name = request.POST.get('bank_name')
+                    bank_account_number = request.POST.get('bank_account_number')
+                    withdrawal_amount = float(request.POST.get('withdrawal_amount', 0))
+                    if withdrawal_amount > 0 and withdrawal_amount <= user_balance:
+                        # Deduct from user
+                        cursor.execute("UPDATE sijarta.users SET MyPayBalance = MyPayBalance - %s WHERE Id = %s", [withdrawal_amount, user_id])
+                        # Insert transaction record
+                        cursor.execute("""
+                            INSERT INTO sijarta.tr_mypay (Id, UserId, Date, Nominal, CategoryId)
+                            VALUES (gen_random_uuid(), %s, CURRENT_DATE, -%s, 
+                                    (SELECT Id FROM sijarta.tr_mypay_category WHERE CategoryName = 'withdrawal MyPay to bank account'))
+                        """, [user_id, withdrawal_amount])
+                        messages.success(request, 'Withdrawal successful!')
+                    else:
+                        messages.error(request, 'Invalid or insufficient amount for withdrawal.')
+
+                conn.commit()
+                return redirect('main:mypay')
+        except Exception as e:
+            conn.rollback()
+            messages.error(request, f'Error processing transaction: {str(e)}')
+        finally:
+            conn.close()
+
+    return render(request, 'mypay_transaction.html', {
+        'user_role': user_role,
+        'service_orders': service_orders,
     })

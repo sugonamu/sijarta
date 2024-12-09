@@ -10,6 +10,12 @@
     <p>User ID: {{ user_id }}</p>
     <p>Role: {{ user_role }}</p>
 
+    <!-- MyPay Button -->
+    <h2>MyPay</h2>
+    <form method="GET" action="{% url 'main:mypay' %}">
+        <button type="submit">Go to MyPay</button>
+    </form>
+
     <h2>Explore Services</h2>
     <form method="GET" action="{% url 'main:home' %}">
         <label for="categoryFilter">Filter by Category:</label>
@@ -35,7 +41,6 @@
                 <ul>
                     {% for subcategory in item.subcategories %}
                         <li>
-                            <!-- Make the subcategory name a clickable link -->
                             <a href="{% url 'main:subcategory_user' subcategory_name=subcategory.subcategoryname %}">
                                 {{ subcategory.subcategoryname }}
                             </a>
@@ -45,7 +50,6 @@
             </li>
         {% endfor %}
     </ul>
-
 
 </body>
 </html>
