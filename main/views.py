@@ -89,3 +89,9 @@ def success_view(request):
         'username': username,
         'categories_with_subcategories': categories_with_subcategories,  # Use the new structure
     })
+
+def subcategory_detail(request, subcategory_name):
+    # For now, we pass the subcategory_name directly as context
+    return render(request, 'subcategory_user.html', {
+        'subcategory_name': subcategory_name
+    })

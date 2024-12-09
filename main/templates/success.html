@@ -35,13 +35,17 @@
                 <ul>
                     {% for subcategory in item.subcategories %}
                         <li>
-                            <strong>{{ subcategory.subcategoryname }}</strong>
+                            <!-- Make the subcategory name a clickable link -->
+                            <a href="{% url 'main:subcategory_user' subcategory_name=subcategory.subcategoryname %}">
+                                {{ subcategory.subcategoryname }}
+                            </a>
                         </li>
                     {% endfor %}
                 </ul>
             </li>
         {% endfor %}
     </ul>
+
 
 </body>
 </html>
