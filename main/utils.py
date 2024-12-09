@@ -143,3 +143,28 @@ def get_service_sessions_by_subcategory(subcategory_name):
         })
 
     return grouped_sessions
+def get_testimonials_query(subcategory_name):
+    query = """
+    SELECT DISTINCT
+        c.name AS customer_name,
+        t.text AS review,
+        t.rating,
+        s.servicedate,
+        w.name AS worker_name
+    FROM 
+        sijarta.tr_service_order s
+    JOIN 
+        sijarta.users c ON s.customerid = c.id
+    JOIN 
+        sijarta.users w ON s.workerid = w.id
+    JOIN 
+        sijarta.testimoni t ON s.id = t.servicetrid
+    JOIN 
+        sijarta.service_subcategory sc ON s.subcategoryid = sc.id
+    WHERE 
+        sc.subcategoryname = %s
+    ORDER BY 
+        s.servicedate DESC;
+    """
+    return query
+

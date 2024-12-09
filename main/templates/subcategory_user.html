@@ -21,5 +21,18 @@
             </li>
         {% endfor %}
     </ul>
+
+    <h3>Testimonials</h3>
+    <ul>
+        {% for testimonial in testimonials %}
+            <li>
+                <strong>Customer:</strong> {{ testimonial.customer_name }}<br>
+                <strong>Review:</strong> {{ testimonial.review }}<br>
+                <strong>Rating:</strong> {{ testimonial.rating }}<br>
+                <strong>Service Date:</strong> {{ testimonial.service_date }}<br>
+                <strong>Worker:</strong> {{ testimonial.worker_name }}
+            </li>
+        {% endfor %}
+    </ul>
 </body>
 </html>

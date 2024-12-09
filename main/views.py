@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password, check_password
-from .utils import authenticate_user, get_db_connection,get_service_categories,get_service_subcategories,get_service_sessions_by_subcategory
+from .utils import authenticate_user, get_db_connection,get_service_categories,get_service_subcategories,get_service_sessions_by_subcategory,get_testimonials_query
 from django.contrib import messages
 
 def login_view(request):
@@ -91,13 +91,29 @@ def success_view(request):
     })
 
 
-
 def subcategory_user(request, subcategory_name):
+    from django.db import connection
+
     # Call the utility function to get the grouped sessions for the specific subcategory
     grouped_sessions = get_service_sessions_by_subcategory(subcategory_name)
+
+    # Fetch testimonials
+    testimonials = []
+    with connection.cursor() as cursor:
+        cursor.execute(get_testimonials_query(subcategory_name), [subcategory_name])
+        rows = cursor.fetchall()
+        for row in rows:
+            testimonials.append({
+                'customer_name': row[0],
+                'review': row[1],
+                'rating': row[2],
+                'service_date': row[3],
+                'worker_name': row[4],
+            })
 
     # Pass the data to the template
     return render(request, 'subcategory_user.html', {
         'subcategory_name': subcategory_name,
         'grouped_sessions': grouped_sessions,
+        'testimonials': testimonials,
     })
