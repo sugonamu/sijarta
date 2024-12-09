@@ -1,63 +1,46 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Success Page</title>
+</head>
+<body>
+    <h1>Welcome, {{ username }}!</h1>
 
-{% block title %}Success Page{% endblock title %}
+    <h2>Your Information</h2>
+    <p>User ID: {{ user_id }}</p>
+    <p>Role: {{ user_role }}</p>
 
-{% block content %}
-{% include 'navbar.html' %}
-{% load static %}
+    <h2>Explore Services</h2>
+    <form method="GET" action="{% url 'main:home' %}">
+        <label for="categoryFilter">Filter by Category:</label>
+        <select id="categoryFilter" name="category" onchange="this.form.submit()">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="searchInput">Search:</label>
+        <input type="text" id="searchInput" name="search" value="{{ search_term }}" placeholder="Search categories...">
+        <button type="submit">Search</button>
+    </form>
 
-<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
-    <h1 class="text-3xl font-bold mb-6">Welcome to the Service Homepage</h1>
-
-    <!-- Search Filter and Search Bar -->
-    <div class="mb-6">
-        <form id="filterForm" method="GET" action="{% url 'main:home' %}" class="flex space-x-4">
-            <!-- Category Filter -->
-            <div>
-                <label for="categoryFilter" class="block mb-2 text-lg font-medium">Filter by Category:</label>
-                <select id="categoryFilter" name="category" class="p-2 border border-gray-300 rounded" onchange="this.form.submit()">
-                    <option value="">All Categories</option>
-                    {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>
-                            {{ category.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Search Input -->
-            <div>
-                <label for="searchInput" class="block mb-2 text-lg font-medium">Search:</label>
-                <input type="text" id="searchInput" name="search" value="{{ search_term }}" placeholder="Search categories..." class="p-2 border border-gray-300 rounded">
-            </div>
-
-            <button type="submit" class="p-2 bg-blue-500 text-white rounded">Search</button>
-        </form>
-    </div>
-
-    <!-- Service Categories and Subcategories -->
-    <div id="serviceList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <h3>Service Categories</h3>
+    <ul>
         {% for category in categories %}
-            <div class="bg-white p-4 rounded shadow" data-category-id="{{ category.id }}">
-                <h2 class="text-2xl font-bold mb-2">{{ category.name }}</h2>
+            <li>
+                <strong>{{ category.name }}</strong>
                 <ul>
                     {% for subcategory in category.subcategories.all %}
-                        <li class="mb-2">
-                            <a href="{% url 'main:subcategory_detail' subcategory.id %}" class="text-blue-500 hover:underline">
-                                {{ subcategory.name }}
-                            </a>
+                        <li>
+                            <a href="{% url 'main:subcategory_detail' subcategory.id %}">{{ subcategory.name }}</a>
                         </li>
                     {% endfor %}
                 </ul>
-            </div>
+            </li>
         {% endfor %}
-    </div>
-</div>
-
-<script>
-    document.getElementById('categoryFilter').addEventListener('change', function () {
-        document.getElementById('filterForm').submit();
-    });
-</script>
-
-{% endblock content %}
+    </ul>
+</body>
+</html>
