@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password, check_password
-from .utils import authenticate_user, get_db_connection,get_service_categories,get_service_subcategories
+from .utils import authenticate_user, get_db_connection,get_service_categories,get_service_subcategories,get_service_sessions_by_subcategory
 from django.contrib import messages
 
 def login_view(request):
@@ -90,8 +90,14 @@ def success_view(request):
         'categories_with_subcategories': categories_with_subcategories,  # Use the new structure
     })
 
-def subcategory_detail(request, subcategory_name):
-    # For now, we pass the subcategory_name directly as context
+
+
+def subcategory_user(request, subcategory_name):
+    # Call the utility function to get the grouped sessions for the specific subcategory
+    grouped_sessions = get_service_sessions_by_subcategory(subcategory_name)
+
+    # Pass the data to the template
     return render(request, 'subcategory_user.html', {
-        'subcategory_name': subcategory_name
+        'subcategory_name': subcategory_name,
+        'grouped_sessions': grouped_sessions,
     })

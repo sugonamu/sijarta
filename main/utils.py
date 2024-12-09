@@ -95,3 +95,51 @@ def get_service_subcategories(category_id):
         })
     
     return subcategories_list
+def get_service_sessions_by_subcategory(subcategory_name):
+    """
+    This utility function retrieves service sessions for a specific subcategory from the database.
+    
+    Parameters:
+    - subcategory_name (str): The name of the subcategory to filter by.
+    
+    Returns:
+    - dict: A dictionary with subcategory IDs as keys and lists of sessions as values.
+    """
+    # Connect to the database
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Query to get the sessions and their corresponding subcategory IDs
+    cursor.execute("""
+        SELECT s.subcategoryid, s.session, s.price, sc.subcategoryname
+        FROM sijarta.service_session s
+        JOIN sijarta.service_subcategory sc ON s.subcategoryid = sc.id
+        WHERE sc.subcategoryname = %s
+        ORDER BY s.subcategoryid, s.session;
+    """, [subcategory_name])  # Pass subcategory_name as a parameter to the query
+
+    # Fetch all results
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Group the sessions by subcategoryid
+    grouped_sessions = {}
+    
+    for row in rows:
+        subcategoryid = row[0]
+        session = row[1]
+        price = row[2]
+        subcategoryname = row[3]
+        
+        if subcategoryid not in grouped_sessions:
+            grouped_sessions[subcategoryid] = {
+                'subcategoryname': subcategoryname,
+                'sessions': []
+            }
+        
+        grouped_sessions[subcategoryid]['sessions'].append({
+            'session': session,
+            'price': price
+        })
+
+    return grouped_sessions

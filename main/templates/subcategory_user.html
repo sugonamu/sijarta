@@ -1,11 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Subcategory Detail</title>
+    <title>Subcategory Details</title>
 </head>
 <body>
-    <h1>{{ subcategory_name }}</h1> <!-- Displaying the subcategory name -->
+    <h1>Subcategory: {{ subcategory_name }}</h1>
 
-    <p>This is the detail page for the subcategory.</p>
+    <h3>Service Sessions</h3>
+    <ul>
+        {% for subcategory_id, data in grouped_sessions.items %}
+            <li>
+                <strong>{{ data.subcategoryname }}</strong> <!-- Display subcategory name -->
+                <ul>
+                    {% for session in data.sessions %}
+                        <li>
+                            <strong>Session {{ session.session }}</strong> - Price: ${{ session.price }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    </ul>
 </body>
 </html>
