@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password, check_password
-from .utils import authenticate_user, get_db_connection
+from .utils import authenticate_user, get_db_connection,get_service_categories
 from django.contrib import messages
 
 def login_view(request):
@@ -64,6 +64,7 @@ def register_view(request):
             conn.close()
     return render(request, 'register.html')
 
+from .utils import get_service_categories
 
 def success_view(request):
     # Retrieve session data
@@ -71,9 +72,13 @@ def success_view(request):
     user_role = request.session.get('user_role')
     username = request.session.get('username', 'Guest')
 
+    # Get service categories from the database
+    categories = get_service_categories()
+
     # Render the success page
     return render(request, 'success.html', {
         'user_id': user_id,
         'user_role': user_role,
         'username': username,
+        'categories': categories,  # Pass categories to the template
     })

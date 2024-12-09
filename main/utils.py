@@ -55,3 +55,14 @@ def authenticate_user(username, password):
     finally:
         conn.close()
     return None
+
+def get_service_categories():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, categoryname
+        FROM sijarta.service_category
+    """)
+    categories = cursor.fetchall()
+    conn.close()
+    return categories

@@ -16,8 +16,8 @@
         <select id="categoryFilter" name="category" onchange="this.form.submit()">
             <option value="">All Categories</option>
             {% for category in categories %}
-                <option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>
-                    {{ category.name }}
+                <option value="{{ category.0 }}" {% if category.0|stringformat:"s" == request.GET.category %}selected{% endif %}>
+                    {{ category.1 }}
                 </option>
             {% endfor %}
         </select>
@@ -31,14 +31,7 @@
     <ul>
         {% for category in categories %}
             <li>
-                <strong>{{ category.name }}</strong>
-                <ul>
-                    {% for subcategory in category.subcategories.all %}
-                        <li>
-                            <a href="{% url 'main:subcategory_detail' subcategory.id %}">{{ subcategory.name }}</a>
-                        </li>
-                    {% endfor %}
-                </ul>
+                <strong>{{ category.1 }}</strong> <!-- category.1 is the namecategory -->
             </li>
         {% endfor %}
     </ul>
