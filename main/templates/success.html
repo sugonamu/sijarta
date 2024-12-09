@@ -29,11 +29,19 @@
 
     <h3>Service Categories</h3>
     <ul>
-        {% for category in categories %}
+        {% for item in categories_with_subcategories %}
             <li>
-                <strong>{{ category.1 }}</strong> <!-- category.1 is the namecategory -->
+                <strong>{{ item.category.1 }}</strong> <!-- category name -->
+                <ul>
+                    {% for subcategory in item.subcategories %}
+                        <li>
+                            <strong>{{ subcategory.subcategoryname }}</strong>
+                        </li>
+                    {% endfor %}
+                </ul>
             </li>
         {% endfor %}
     </ul>
+
 </body>
 </html>

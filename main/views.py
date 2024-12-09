@@ -4,7 +4,7 @@ from django.http import HttpResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password, check_password
-from .utils import authenticate_user, get_db_connection,get_service_categories
+from .utils import authenticate_user, get_db_connection,get_service_categories,get_service_subcategories
 from django.contrib import messages
 
 def login_view(request):
@@ -64,8 +64,6 @@ def register_view(request):
             conn.close()
     return render(request, 'register.html')
 
-from .utils import get_service_categories
-
 def success_view(request):
     # Retrieve session data
     user_id = request.session.get('user_id')
@@ -75,10 +73,19 @@ def success_view(request):
     # Get service categories from the database
     categories = get_service_categories()
 
-    # Render the success page
+    # Prepare the context with categories and subcategories
+    categories_with_subcategories = []
+    for category in categories:
+        subcategories = get_service_subcategories(category[0])  # Assuming category[0] is the category ID
+        categories_with_subcategories.append({
+            'category': category,
+            'subcategories': subcategories,
+        })
+
+    # Render the success page with categories and their subcategories
     return render(request, 'success.html', {
         'user_id': user_id,
         'user_role': user_role,
         'username': username,
-        'categories': categories,  # Pass categories to the template
+        'categories_with_subcategories': categories_with_subcategories,  # Use the new structure
     })

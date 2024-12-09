@@ -66,3 +66,32 @@ def get_service_categories():
     categories = cursor.fetchall()
     conn.close()
     return categories
+
+
+
+
+# Function to retrieve subcategories for a given category ID
+def get_service_subcategories(category_id):
+    conn = get_db_connection()  # Assuming this function is defined to get the DB connection
+    cursor = conn.cursor()
+    
+    # SQL query to get the subcategories for the specified category ID
+    cursor.execute("""
+        SELECT id, subcategoryname, description 
+        FROM sijarta.service_subcategory
+        WHERE servicecategoryid = %s;
+    """, [category_id])
+    
+    subcategories = cursor.fetchall()
+    conn.close()
+    
+    # Structure the subcategories data
+    subcategories_list = []
+    for subcategory in subcategories:
+        subcategories_list.append({
+            'id': subcategory[0],
+            'subcategoryname': subcategory[1],
+            'description': subcategory[2]
+        })
+    
+    return subcategories_list
