@@ -132,7 +132,31 @@ def subcategory_user(request, subcategory_name):
         'testimonials': testimonials,
     })
 
+def subcategory_worker(request, subcategory_name):
 
+    # Call the utility function to get the grouped sessions for the specific subcategory
+    grouped_sessions = get_service_sessions_by_subcategory(subcategory_name)
+
+    # Fetch testimonials
+    testimonials = []
+    with connection.cursor() as cursor:
+        cursor.execute(get_testimonials_query(subcategory_name), [subcategory_name])
+        rows = cursor.fetchall()
+        for row in rows:
+            testimonials.append({
+                'customer_name': row[0],
+                'review': row[1],
+                'rating': row[2],
+                'service_date': row[3],
+                'worker_name': row[4],
+            })
+
+    # Pass the data to the template
+    return render(request, 'subcategory_worker.html', {
+        'subcategory_name': subcategory_name,
+        'grouped_sessions': grouped_sessions,
+        'testimonials': testimonials,
+    })
 def mypay_view(request):
     user_id = request.session.get('user_id')
     user_role = request.session.get('user_role')
