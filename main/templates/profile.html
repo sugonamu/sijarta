@@ -63,7 +63,7 @@
                     <input type="text" name="address" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
                 </div>
 
-                {% if user.userprofile.role == 'worker' %}
+                {% if request.session.user_role == 'worker' %}
                 <div class="mb-4">
                     <label for="bank_name" class="block font-semibold text-gray-600 mb-2">Bank Name</label>
                     <select id="bank_name" name="bank_name" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
