@@ -5,44 +5,53 @@
 {% block content %}
 {% include 'navbar.html' %}
 {% load static %}
-    <h1>Welcome, {{ username }}!</h1>
+<div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-4">
 
-    <h2>Your Information</h2>
-    <p>User ID: {{ user_id }}</p>
-    <p>Role: {{ user_role }}</p>
+    <h1 class="text-3xl font-semibold text-gray-800 mb-4">Welcome, {{ username }}!</h1>
+
+    <h2 class="text-2xl font-semibold text-gray-700 mb-2">Your Information</h2>
+    <p class="text-gray-600 mb-2"><strong>User ID:</strong> {{ user_id }}</p>
+    <p class="text-gray-600 mb-4"><strong>Role:</strong> {{ user_role }}</p>
 
     <!-- MyPay Button -->
-    <h2>MyPay</h2>
+    <h2 class="text-2xl font-semibold text-gray-700 mb-2">MyPay</h2>
     <form method="GET" action="{% url 'main:mypay' %}">
-        <button type="submit">Go to MyPay</button>
+        <button type="submit" class="px-4 py-2 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition">Go to MyPay</button>
     </form>
 
-    <h2>Explore Services</h2>
-    <form method="GET" action="{% url 'main:home' %}">
-        <label for="categoryFilter">Filter by Category:</label>
-        <select id="categoryFilter" name="category" onchange="this.form.submit()">
-            <option value="">All Categories</option>
-            {% for category in categories %}
-                <option value="{{ category.0 }}" {% if category.0|stringformat:"s" == request.GET.category %}selected{% endif %}>
-                    {{ category.1 }}
-                </option>
-            {% endfor %}
-        </select>
-        <br>
-        <label for="searchInput">Search:</label>
-        <input type="text" id="searchInput" name="search" value="{{ search_term }}" placeholder="Search categories...">
-        <button type="submit">Search</button>
+    <h2 class="text-2xl font-semibold text-gray-700 mt-6 mb-4">Explore Services</h2>
+    <form method="GET" action="{% url 'main:home' %}" class="mb-6">
+        <div class="flex flex-col md:flex-row items-start gap-4 mb-4">
+            <div class="flex flex-col">
+                <label for="categoryFilter" class="text-gray-600 font-medium mb-2">Filter by Category:</label>
+                <select id="categoryFilter" name="category" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.0 }}" {% if category.0|stringformat:"s" == request.GET.category %}selected{% endif %}>
+                            {{ category.1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex flex-col">
+                <label for="searchInput" class="text-gray-600 font-medium mb-2">Search:</label>
+                <input type="text" id="searchInput" name="search" value="{{ search_term }}" placeholder="Search categories..."
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400">
+            </div>
+        </div>
+        <button type="submit" class="px-4 py-2 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition">Search</button>
     </form>
 
-    <h3>Service Categories</h3>
-    <ul>
+    <h3 class="text-xl font-semibold text-gray-700 mb-4">Service Categories</h3>
+    <ul class="list-disc pl-6 space-y-2">
         {% for item in categories_with_subcategories %}
-            <li>
-                <strong>{{ item.category.1 }}</strong> <!-- category name -->
-                <ul>
+            <li class="text-gray-700">
+                <strong>{{ item.category.1 }}</strong>
+                <ul class="pl-4 space-y-1">
                     {% for subcategory in item.subcategories %}
                         <li>
-                            <a href="{% url 'main:subcategory_user' subcategory_name=subcategory.subcategoryname %}">
+                            <a href="{% url 'main:subcategory_user' subcategory_name=subcategory.subcategoryname %}" class="text-blue-600 hover:text-blue-800 transition">
                                 {{ subcategory.subcategoryname }}
                             </a>
                         </li>
@@ -52,4 +61,5 @@
         {% endfor %}
     </ul>
 
+</div>
 {% endblock content %}
