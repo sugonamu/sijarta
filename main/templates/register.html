@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
+    <script>
+        // Function to show or hide worker fields based on the selected role
+        function toggleWorkerFields() {
+            var role = document.getElementById('role').value;
+            var workerFields = document.getElementById('worker-fields');
+            if (role === 'worker') {
+                workerFields.style.display = 'block';
+            } else {
+                workerFields.style.display = 'none';
+            }
+        }
+    </script>
 </head>
 <body>
     <h2>Register</h2>
@@ -31,11 +43,41 @@
         <input type="text" id="address" name="address">
         <br>
         <label for="role">Role:</label>
-        <select id="role" name="role" required>
+        <select id="role" name="role" required onchange="toggleWorkerFields()">
             <option value="user">User</option>
             <option value="worker">Worker</option>
         </select>
         <br>
+
+        <!-- Worker Fields (Initially Hidden) -->
+        <div id="worker-fields" style="display: none;">
+            <div class="mb-4">
+                <label for="bank_name" class="block text-sm font-medium" style="color: #554a35;">Bank Name</label>
+                <select id="bank_name" name="bank_name" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+                    <option value="GoPay">GoPay</option>
+                    <option value="OVO">OVO</option>
+                    <option value="Virtual Account BCA">Virtual Account BCA</option>
+                    <option value="Virtual Account BNI">Virtual Account BNI</option>
+                    <option value="Virtual Account Mandiri">Virtual Account Mandiri</option>
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label for="account_number" class="block text-sm font-medium" style="color: #554a35;">Account Number</label>
+                <input type="text" id="account_number" name="account_number" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="npwp" class="block text-sm font-medium" style="color: #554a35;">NPWP</label>
+                <input type="text" id="npwp" name="npwp" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
+            </div>
+
+            <div class="mb-4">
+                <label for="image_url" class="block text-sm font-medium" style="color: #554a35;">Image URL</label>
+                <input type="url" id="image_url" name="image_url" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
+            </div>
+        </div>
+
         <button type="submit">Register</button>
     </form>
     <p>Already have an account? <a href="{% url 'main:login' %}">Login here</a></p>

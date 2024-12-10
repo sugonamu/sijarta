@@ -38,6 +38,12 @@ def register_view(request):
         dob = request.POST.get('dob', None)
         address = request.POST.get('address', None)
         role = request.POST['role']
+        
+        # Worker-specific fields (only included if role is 'worker')
+        bank_name = request.POST.get('bank_name', '')
+        account_number = request.POST.get('account_number', '')
+        npwp = request.POST.get('npwp', '')
+        image_url = request.POST.get('image_url', '')
 
         conn = get_db_connection()
         try:
@@ -55,10 +61,12 @@ def register_view(request):
                         VALUES ((SELECT id FROM sijarta.users WHERE phoneNum = %s), 'Basic')
                     """, [phone])
                 elif role == 'worker':
+                    # Insert into the worker table with the additional fields
                     cursor.execute("""
                         INSERT INTO sijarta.worker (id, bankName, accNumber, npwp, picUrl, rate, totalFinishOrder)
-                        VALUES ((SELECT id FROM sijarta.users WHERE phoneNum = %s), '', '', '', '', 0, 0)
-                    """, [phone])
+                        VALUES ((SELECT id FROM sijarta.users WHERE phoneNum = %s), %s, %s, %s, %s, 0, 0)
+                    """, [phone, bank_name, account_number, npwp, image_url])
+
             conn.commit()
             messages.success(request, 'Registration successful!')
             return redirect('main:login')
@@ -67,6 +75,7 @@ def register_view(request):
             messages.error(request, f'Error during registration: {str(e)}')
         finally:
             conn.close()
+
     return render(request, 'register.html')
 
 def success_view(request):
