@@ -1,32 +1,44 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>MyPay</title>
-</head>
-<body>
-    <h1>MyPay Balance</h1>
-    <p>Your Current Balance: {{ balance }}</p>
+{% extends 'base.html' %}
+{% load static %}
 
-    <form method="GET" action="{% url 'main:mypay_transaction' %}">
-        <button type="submit">Transact</button>
+{% block title %}MyPay Balance{% endblock title %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-4">
+    <h1 class="text-3xl font-semibold text-gray-800 mb-4">MyPay Balance</h1>
+    <p class="text-gray-600 mb-4">Your Current Balance: <span class="font-medium">{{ balance }}</span></p>
+
+    <form method="GET" action="{% url 'main:mypay_transaction' %}" class="mb-6">
+        <button type="submit" class="px-4 py-2 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition">
+            Transact
+        </button>
     </form>
 
-    <h2>Transaction History</h2>
-    <table>
-        <tr>
-            <th>Date</th>
-            <th>Nominal</th>
-            <th>Category</th>
-        </tr>
-        {% for tx in transactions %}
-            <tr>
-                <td>{{ tx.date }}</td>
-                <td>{{ tx.nominal }}</td>
-                <td>{{ tx.category }}</td>
-            </tr>
-        {% endfor %}
-    </table>
+    <h2 class="text-2xl font-semibold text-gray-700 mb-4">Transaction History</h2>
+    <div class="overflow-x-auto">
+        <table class="min-w-full border border-gray-300 rounded-lg">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-4 py-2 text-left font-semibold text-gray-700 border-b">Date</th>
+                    <th class="px-4 py-2 text-left font-semibold text-gray-700 border-b">Nominal</th>
+                    <th class="px-4 py-2 text-left font-semibold text-gray-700 border-b">Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in transactions %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2 border-b text-gray-600">{{ tx.date }}</td>
+                    <td class="px-4 py-2 border-b text-gray-600">{{ tx.nominal }}</td>
+                    <td class="px-4 py-2 border-b text-gray-600">{{ tx.category }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    <p><a href="{% url 'main:success' %}">Back to Success Page</a></p>
-</body>
-</html>
+    <p class="mt-6">
+        <a href="{% url 'main:success' %}" class="text-blue-600 hover:text-blue-800 transition">Back to Success Page</a>
+    </p>
+</div>
+{% endblock content %}
