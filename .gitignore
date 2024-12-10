@@ -6,6 +6,9 @@ __pycache__
 db.sqlite3
 media
 
+#exclude database
+TK1_SQL_KKI_Rabbids.sql
+
 # Backup files
 *.bak
 
