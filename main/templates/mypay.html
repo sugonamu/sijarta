@@ -1,53 +1,32 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MyPay</title>
+</head>
+<body>
+    <h1>MyPay Balance</h1>
+    <p>Your Current Balance: {{ balance }}</p>
 
-{% block title %}MyPay{% endblock title %}
+    <form method="GET" action="{% url 'main:mypay_transaction' %}">
+        <button type="submit">Transact</button>
+    </form>
 
-{% block content %}
-{% include 'navbar.html' %}
+    <h2>Transaction History</h2>
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Nominal</th>
+            <th>Category</th>
+        </tr>
+        {% for tx in transactions %}
+            <tr>
+                <td>{{ tx.date }}</td>
+                <td>{{ tx.nominal }}</td>
+                <td>{{ tx.category }}</td>
+            </tr>
+        {% endfor %}
+    </table>
 
-<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
-    <h1 class="text-3xl font-bold mb-6">MyPay</h1>
-
-    <!-- Top Section -->
-    <div class="flex justify-between items-center border border-gray-300 p-4 rounded bg-white mb-6">
-        <div class="flex items-center space-x-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-600">Phone Number</label>
-                <p class="text-lg font-bold text-gray-800">{{ user.username }}</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-600">Balance</label>
-                <p class="text-lg font-bold text-green-600">Rp {{ balance }}</p>
-            </div>
-        </div>
-        <!-- Transact Button: Link to MyPay Transactions -->
-        <a href="{% url 'main:mypay_transactions' %}" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Transact</a>
-    </div>
-
-    <!-- Transaction History Section -->
-    <div class="border border-gray-300 rounded bg-white p-4">
-        <h2 class="text-2xl font-semibold mb-4">Transaction History</h2>
-        {% if transactions %}
-            <div class="space-y-4">
-                {% for transaction in transactions %}
-                <div class="flex justify-between items-center border-b border-gray-300 pb-2">
-                    <div>
-                        <p class="text-lg font-bold {% if transaction.amount < 0 %}text-red-600{% else %}text-green-600{% endif %}">
-                            {{ transaction.amount|floatformat:2 }}
-                        </p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-600">{{ transaction.timestamp }}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">{{ transaction.get_transaction_type_display }}</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="text-gray-600">No transactions found.</p>
-        {% endif %}
-    </div>
-</div>
-{% endblock content %}
+    <p><a href="{% url 'main:success' %}">Back to Success Page</a></p>
+</body>
+</html>

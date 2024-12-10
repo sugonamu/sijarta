@@ -1,121 +1,85 @@
-{% extends 'base.html' %}
-{% block meta %}
-<title>Register</title>
-{% endblock meta %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <script>
+        // Function to show or hide worker fields based on the selected role
+        function toggleWorkerFields() {
+            var role = document.getElementById('role').value;
+            var workerFields = document.getElementById('worker-fields');
+            if (role === 'worker') {
+                workerFields.style.display = 'block';
+            } else {
+                workerFields.style.display = 'none';
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>Register</h2>
+    <form method="POST" action="{% url 'main:register' %}">
+        {% csrf_token %}
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br>
+        <label for="sex">Sex:</label>
+        <select id="sex" name="sex" required>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+        </select>
+        <br>
+        <label for="phone">Phone Number:</label>
+        <input type="text" id="phone" name="phone" required>
+        <br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+        <br>
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="dob" name="dob">
+        <br>
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address">
+        <br>
+        <label for="role">Role:</label>
+        <select id="role" name="role" required onchange="toggleWorkerFields()">
+            <option value="user">User</option>
+            <option value="worker">Worker</option>
+        </select>
+        <br>
 
-{% block content %}
-<div class="flex items-center justify-center min-h-screen bg-gray-100" style="background-color: #f9f9f9;">
-    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-        <h1 class="text-3xl font-bold text-center" style="color: #b89576;">Register</h1>
-
-        <!-- Modal for role selection -->
-        <div id="roleModal" class="fixed inset-0 flex items-center justify-center bg-gray-600 bg-opacity-50 z-50">
-            <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
-                <h2 class="text-xl font-semibold text-center mb-4">Select Your Role</h2>
-                <div class="flex justify-center space-x-4">
-                    <button onclick="selectRole('user')" class="px-6 py-2 bg-blue-500 text-white rounded-md">User</button>
-                    <button onclick="selectRole('worker')" class="px-6 py-2 bg-green-500 text-white rounded-md">Worker</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Form for registration -->
-        <form method="POST" class="register-form" id="register-form">
-            {% csrf_token %}
-
-            <!-- Name, Password, Sex, Phone, Address, Birthdate fields common to both -->
+        <!-- Worker Fields (Initially Hidden) -->
+        <div id="worker-fields" style="display: none;">
             <div class="mb-4">
-                <label for="name" class="block text-sm font-medium" style="color: #554a35;">Name</label>
-                <input type="text" id="name" name="name" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
-            </div>
-
-            <div class="mb-4">
-                <label for="password" class="block text-sm font-medium" style="color: #554a35;">Password</label>
-                <input type="password" id="password" name="password" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
-            </div>
-
-            <div class="mb-4">
-                <label for="sex" class="block text-sm font-medium" style="color: #554a35;">Sex</label>
-                <select id="sex" name="sex" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
+                <label for="bank_name" class="block text-sm font-medium" style="color: #554a35;">Bank Name</label>
+                <select id="bank_name" name="bank_name" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+                    <option value="GoPay">GoPay</option>
+                    <option value="OVO">OVO</option>
+                    <option value="Virtual Account BCA">Virtual Account BCA</option>
+                    <option value="Virtual Account BNI">Virtual Account BNI</option>
+                    <option value="Virtual Account Mandiri">Virtual Account Mandiri</option>
                 </select>
             </div>
 
             <div class="mb-4">
-                <label for="phone" class="block text-sm font-medium" style="color: #554a35;">Phone Number</label>
-                <input type="text" id="phone" name="phone" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+                <label for="account_number" class="block text-sm font-medium" style="color: #554a35;">Account Number</label>
+                <input type="text" id="account_number" name="account_number" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
             </div>
 
             <div class="mb-4">
-                <label for="address" class="block text-sm font-medium" style="color: #554a35;">Address</label>
-                <input type="text" id="address" name="address" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+                <label for="npwp" class="block text-sm font-medium" style="color: #554a35;">NPWP</label>
+                <input type="text" id="npwp" name="npwp" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
             </div>
 
             <div class="mb-4">
-                <label for="birthdate" class="block text-sm font-medium" style="color: #554a35;">Birthdate</label>
-                <input type="date" id="birthdate" name="birthdate" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
+                <label for="image_url" class="block text-sm font-medium" style="color: #554a35;">Image URL</label>
+                <input type="url" id="image_url" name="image_url" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
             </div>
+        </div>
 
-            <!-- Worker-specific fields (hidden initially) -->
-            <div id="worker-fields" class="hidden">
-                <div class="mb-4">
-                    <label for="bank_name" class="block text-sm font-medium" style="color: #554a35;">Bank Name</label>
-                    <select id="bank_name" name="bank_name" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
-                        <option value="GoPay">GoPay</option>
-                        <option value="OVO">OVO</option>
-                        <option value="Virtual Account BCA">Virtual Account BCA</option>
-                        <option value="Virtual Account BNI">Virtual Account BNI</option>
-                        <option value="Virtual Account Mandiri">Virtual Account Mandiri</option>
-                    </select>
-                </div>
-
-                <div class="mb-4">
-                    <label for="account_number" class="block text-sm font-medium" style="color: #554a35;">Account Number</label>
-                    <input type="text" id="account_number" name="account_number" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500" required>
-                </div>
-
-                <div class="mb-4">
-                    <label for="npwp" class="block text-sm font-medium" style="color: #554a35;">NPWP</label>
-                    <input type="text" id="npwp" name="npwp" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
-                </div>
-
-                <div class="mb-4">
-                    <label for="image_url" class="block text-sm font-medium" style="color: #554a35;">Image URL</label>
-                    <input type="url" id="image_url" name="image_url" class="w-full mt-1 border-gray-300 rounded-md shadow-sm focus:ring-stone-500 focus:border-stone-500">
-                </div>
-            </div>
-
-            <div>
-                <input type="submit" name="submit" value="Register" 
-                       class="w-full font-semibold py-2 px-4 rounded transition duration-300 focus:outline-none bg-[#b89576] text-white hover:bg-[#d1b79a]" />
-            </div>
-        </form>
-        <p class="text-center mt-4" style="color: #8b8577;">Already have an account? <a href="{% url 'main:login' %}" class="text-brown-600 hover:underline">Login here</a>.</p>
-    </div>
-</div>
-
-<!-- JavaScript for handling modal popup, role selection, and form toggle -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Show the role selection modal on page load
-        const roleModal = document.getElementById('roleModal');
-        roleModal.style.display = 'flex'; // Show the modal
-
-        // Function to set the role and close the modal
-        window.selectRole = function(role) {
-            // Close the role selection modal
-            roleModal.style.display = 'none';
-
-            // Toggle the fields based on the selected role
-            if (role === 'worker') {
-                document.getElementById('worker-fields').classList.remove('hidden');
-            } else {
-                document.getElementById('worker-fields').classList.add('hidden');
-            }
-        };
-    });
-</script>
-
-{% endblock content %}
+        <button type="submit">Register</button>
+    </form>
+    <p>Already have an account? <a href="{% url 'main:login' %}">Login here</a></p>
+</body>
+</html>

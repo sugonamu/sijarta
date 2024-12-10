@@ -1,45 +1,38 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subcategory Details</title>
+</head>
+<body>
+    <h1>Subcategory: {{ subcategory_name }}</h1>
 
-{% block title %}Subcategory Detail{% endblock %}
-
-{% block content %}
-{% include 'navbar.html' %}
-<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
-    <h2 class="text-2xl font-semibold mb-4">Service Category: {{ subcategory.category.name }}</h2>
-    <h1 class="text-3xl font-bold mb-6">{{ subcategory.name }}</h1>
-    <p>{{ subcategory.description }}</p>
-
-    <h2 class="text-2xl font-semibold mb-4">Available Workers</h2>
+    <h3>Service Sessions</h3>
     <ul>
-        {% for worker in workers %}
-        <li>{{ worker.user.username }}</li>  <!-- Display the worker's username -->
-        {% empty %}
-        <li>No workers available for this service category.</li>
+        {% for subcategory_id, data in grouped_sessions.items %}
+            <li>
+                <strong>{{ data.subcategoryname }}</strong> <!-- Display subcategory name -->
+                <ul>
+                    {% for session in data.sessions %}
+                        <li>
+                            <strong>Session {{ session.session }}</strong> - Price: ${{ session.price }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
         {% endfor %}
     </ul>
 
-    <h2 class="text-2xl font-semibold mb-4">Testimonials</h2>
-    <div class="bg-white shadow-md rounded p-4 mb-4">
+    <h3>Testimonials</h3>
+    <ul>
         {% for testimonial in testimonials %}
-            <p class="font-semibold">Rating: {{ testimonial.rating }}/10</p>
-            <p>{{ testimonial.comment }}</p>
-        {% empty %}
-            <p>No testimonials available for this subcategory.</p>
-        {% endfor %}
-    </div>
-
-    <h2 class="text-2xl font-semibold mb-4">Available Service Sessions</h2>
-    <ul>
-        {% for session in sessions %}
-        <li class="flex items-center justify-between mb-2">
-            <span>Session {{ session.session }} - Price: ${{ session.price }}</span>
-            <button class="btn btn-primary border-2 border-gray-500 px-4 py-2 rounded">
-                Book Service
-            </button>
-        </li>
-        {% empty %}
-        <li>No service sessions available for this subcategory.</li>
+            <li>
+                <strong>Customer:</strong> {{ testimonial.customer_name }}<br>
+                <strong>Review:</strong> {{ testimonial.review }}<br>
+                <strong>Rating:</strong> {{ testimonial.rating }}<br>
+                <strong>Service Date:</strong> {{ testimonial.service_date }}<br>
+                <strong>Worker:</strong> {{ testimonial.worker_name }}
+            </li>
         {% endfor %}
     </ul>
-</div>
-{% endblock %}
+</body>
+</html>

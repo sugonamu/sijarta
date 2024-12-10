@@ -1,63 +1,65 @@
 {% extends 'base.html' %}
 
-{% block title %}Success Page{% endblock title %}
+{% block title %}Application Info{% endblock title %}
 
 {% block content %}
 {% include 'navbar.html' %}
 {% load static %}
+<div class="container mx-auto p-6 bg-white shadow-lg rounded-lg mt-4">
 
-<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
-    <h1 class="text-3xl font-bold mb-6">Welcome to the Service Homepage</h1>
+    <h1 class="text-3xl font-semibold text-gray-800 mb-4">Welcome, {{ username }}!</h1>
 
-    <!-- Search Filter and Search Bar -->
-    <div class="mb-6">
-        <form id="filterForm" method="GET" action="{% url 'main:home' %}" class="flex space-x-4">
-            <!-- Category Filter -->
-            <div>
-                <label for="categoryFilter" class="block mb-2 text-lg font-medium">Filter by Category:</label>
-                <select id="categoryFilter" name="category" class="p-2 border border-gray-300 rounded" onchange="this.form.submit()">
+    <h2 class="text-2xl font-semibold text-gray-700 mb-2">Your Information</h2>
+    <p class="text-gray-600 mb-2"><strong>User ID:</strong> {{ user_id }}</p>
+    <p class="text-gray-600 mb-4"><strong>Role:</strong> {{ user_role }}</p>
+
+    <!-- MyPay Button -->
+    <h2 class="text-2xl font-semibold text-gray-700 mb-2">MyPay</h2>
+    <form method="GET" action="{% url 'main:mypay' %}">
+        <button type="submit" class="px-4 py-2 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition">Go to MyPay</button>
+    </form>
+
+    <h2 class="text-2xl font-semibold text-gray-700 mt-6 mb-4">Explore Services</h2>
+    <form method="GET" action="{% url 'main:home' %}" class="mb-6">
+        <div class="flex flex-col md:flex-row items-start gap-4 mb-4">
+            <div class="flex flex-col">
+                <label for="categoryFilter" class="text-gray-600 font-medium mb-2">Filter by Category:</label>
+                <select id="categoryFilter" name="category" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400">
                     <option value="">All Categories</option>
                     {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>
-                            {{ category.name }}
+                        <option value="{{ category.0 }}" {% if category.0|stringformat:"s" == request.GET.category %}selected{% endif %}>
+                            {{ category.1 }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
 
-            <!-- Search Input -->
-            <div>
-                <label for="searchInput" class="block mb-2 text-lg font-medium">Search:</label>
-                <input type="text" id="searchInput" name="search" value="{{ search_term }}" placeholder="Search categories..." class="p-2 border border-gray-300 rounded">
+            <div class="flex flex-col">
+                <label for="searchInput" class="text-gray-600 font-medium mb-2">Search:</label>
+                <input type="text" id="searchInput" name="search" value="{{ search_term }}" placeholder="Search categories..."
+                    class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400">
             </div>
+        </div>
+        <button type="submit" class="px-4 py-2 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition">Search</button>
+    </form>
 
-            <button type="submit" class="p-2 bg-blue-500 text-white rounded">Search</button>
-        </form>
-    </div>
-
-    <!-- Service Categories and Subcategories -->
-    <div id="serviceList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {% for category in categories %}
-            <div class="bg-white p-4 rounded shadow" data-category-id="{{ category.id }}">
-                <h2 class="text-2xl font-bold mb-2">{{ category.name }}</h2>
-                <ul>
-                    {% for subcategory in category.subcategories.all %}
-                        <li class="mb-2">
-                            <a href="{% url 'main:subcategory_detail' subcategory.id %}" class="text-blue-500 hover:underline">
-                                {{ subcategory.name }}
+    <h3 class="text-xl font-semibold text-gray-700 mb-4">Service Categories</h3>
+    <ul class="list-disc pl-6 space-y-2">
+        {% for item in categories_with_subcategories %}
+            <li class="text-gray-700">
+                <strong>{{ item.category.1 }}</strong>
+                <ul class="pl-4 space-y-1">
+                    {% for subcategory in item.subcategories %}
+                        <li>
+                            <a href="{% url 'main:subcategory_user' subcategory_name=subcategory.subcategoryname %}" class="text-blue-600 hover:text-blue-800 transition">
+                                {{ subcategory.subcategoryname }}
                             </a>
                         </li>
                     {% endfor %}
                 </ul>
-            </div>
+            </li>
         {% endfor %}
-    </div>
+    </ul>
+
 </div>
-
-<script>
-    document.getElementById('categoryFilter').addEventListener('change', function () {
-        document.getElementById('filterForm').submit();
-    });
-</script>
-
 {% endblock content %}
