@@ -1,6 +1,5 @@
-{% load static %}
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet"> <!-- Importing Inter font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
         nav {
             font-family: 'Inter', sans-serif;
@@ -42,12 +41,12 @@
         }
 
         button.register {
-            background-color: #FFC58C; /* Light peach color */
+            background-color: #FFC58C;
             color: #4A4A4A;
         }
 
         button.register:hover {
-            background-color: #FFD9AE; /* Slightly brighter peach on hover */
+            background-color: #FFD9AE;
             color: #4A4A4A;
         }
 
@@ -60,7 +59,7 @@
         .auth-buttons a {
             font-size: 0.875rem;
             color: #4A4A4A;
-            background-color: #FFD4B2; /* Soft pastel orange */
+            background-color: #FFD4B2;
             padding: 0.5rem 1rem;
             border-radius: 0.375rem;
             margin-left: 0.5rem;
@@ -69,13 +68,12 @@
         }
 
         .auth-buttons a:hover {
-            background-color: #FFE5CC; /* Lighter pastel orange on hover */
+            background-color: #FFE5CC;
         }
     </style>
 </head>
 
 <nav class="bg-white text-gray-800 p-4 flex justify-between items-center shadow-lg">
-    <div class="flex items-center">
         <span class="self-center text-xl font-bold text-gray-800">
             {% if user.is_authenticated %}
                 {% if user.userprofile.role == 'worker' %}
@@ -89,26 +87,27 @@
         </span>
     </div>
 
-    <div class="flex items-center">
-        {% if user.is_authenticated %}
-            <a href="{% url 'main:mypay' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">MyPay</a>
-            <a href="{% url 'main:profile' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Profile</a>
+        {% if request.session.user_id %}
+            <a href="{% url 'main:mypay' %}" class="text-black-200 hover:text-white transition duration-200">MyPay</a>
+            <a href="{% url 'main:profile' %}" class="text-black-200 hover:text-white transition duration-200">Profile</a>
 
-            {% if user.userprofile.role == 'worker' %}
-                <a href="{% url 'main:success' %}" class="mr-2">Home</a>
-                <a href="{% url 'main:manage_order_status' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage Order Status</a>
-                <a href="{% url 'main:managejob' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Manage My Job</a>
-            {% elif user.userprofile.role == 'user' %}
-                <a href="{% url 'main:success' %}" class="mr-2">Home</a>
-                <a href="{% url 'main:myorder' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">My Order</a>
-                <a href="{% url 'main:discounts' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Discounts</a>
+            {% if request.session.user_role == 'worker' %}
+                <a href="{% url 'main:success' %}" class="text-black-200 hover:text-white transition duration-200">Home</a>
+                <a href="{% url 'main:manage_order_status' %}" class="text-black-200 hover:text-white transition duration-200">Manage Order Status</a>
+                <a href="{% url 'main:managejob' %}" class="text-black-200 hover:text-white transition duration-200">Manage My Job</a>
+            {% elif request.session.user_role == 'user' %}
+                <a href="{% url 'main:success' %}" class="text-black-200 hover:text-white transition duration-200">Home</a>
+                <a href="{% url 'main:myorder' %}" class="text-black-200 hover:text-white transition duration-200">My Order</a>
+                <a href="{% url 'main:discounts' %}" class="text-black-200 hover:text-white transition duration-200">Discounts</a>
             {% endif %}
-            <span class="welcome-message">Welcome, {{ user.username }}</span>
-            <a href="{% url 'main:logout' %}" class="text-gray-800 hover:text-gray-600 transition duration-200">Logout</a>
+
+            <span class="text-black-200">Welcome, {{ request.session.username }}</span>
+            <a href="{% url 'main:logout' %}" class="text-black-200 hover:text-white transition duration-200">Logout</a>
+
         {% else %}
-            <div class="auth-buttons">
-                <a href="{% url 'main:login' %}">Login</a>
-                <a href="{% url 'main:register' %}">Register</a>
+            <div class="flex space-x-6"> <!-- Increased spacing -->
+                <a href="{% url 'main:login' %}" class="text-black-200 hover:text-white transition duration-200">Login</a>
+                <a href="{% url 'main:register' %}" class="text-black-200 hover:text-white transition duration-200">Register</a>
             </div>
         {% endif %}
     </div>

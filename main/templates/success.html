@@ -1,9 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Success Page</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}Application Info{% endblock title %}
+
+{% block content %}
+{% include 'navbar.html' %}
+{% load static %}
     <h1>Welcome, {{ username }}!</h1>
 
     <h2>Your Information</h2>
@@ -51,5 +52,4 @@
         {% endfor %}
     </ul>
 
-</body>
-</html>
+{% endblock content %}

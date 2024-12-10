@@ -306,3 +306,22 @@ def mypay_transaction_view(request):
         'user_role': user_role,
         'service_orders': service_orders,
     })
+
+def logout(request):
+    auth_logout(request) 
+    return redirect('main:login')  
+
+def profile(request):
+    return render(request, 'profile.html')
+
+def manage_order_status(request):
+    return render(request, 'manage_order_status.html')
+
+def managejob(request):
+    return render(request, 'manage_job.html')
+
+def myorder(request):
+    return render(request, 'myorder.html')
+
+def discount(request):
+    return render(request, 'discounts.html')
