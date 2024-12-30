@@ -1,6 +1,6 @@
 # views.py
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password, check_password
@@ -132,7 +132,31 @@ def subcategory_user(request, subcategory_name):
         'testimonials': testimonials,
     })
 
+def subcategory_worker(request, subcategory_name):
 
+    # Call the utility function to get the grouped sessions for the specific subcategory
+    grouped_sessions = get_service_sessions_by_subcategory(subcategory_name)
+
+    # Fetch testimonials
+    testimonials = []
+    with connection.cursor() as cursor:
+        cursor.execute(get_testimonials_query(subcategory_name), [subcategory_name])
+        rows = cursor.fetchall()
+        for row in rows:
+            testimonials.append({
+                'customer_name': row[0],
+                'review': row[1],
+                'rating': row[2],
+                'service_date': row[3],
+                'worker_name': row[4],
+            })
+
+    # Pass the data to the template
+    return render(request, 'subcategory_worker.html', {
+        'subcategory_name': subcategory_name,
+        'grouped_sessions': grouped_sessions,
+        'testimonials': testimonials,
+    })
 def mypay_view(request):
     user_id = request.session.get('user_id')
     user_role = request.session.get('user_role')
@@ -324,4 +348,112 @@ def myorder(request):
     return render(request, 'myorder.html')
 
 def discount(request):
-    return render(request, 'discounts.html')
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Assume the user's ID is retrieved from the session
+    user_id = request.session.get("user_id")
+
+    # Fetch user balance
+    cursor.execute("SELECT MyPayBalance FROM sijarta.USERS WHERE Id = %s", (user_id,))
+    user_balance_row = cursor.fetchone()
+    if user_balance_row:
+        mypay_balance = user_balance_row[0]
+    else:
+        mypay_balance = 0  # Default to 0 if user not found
+
+    # Fetch vouchers
+    cursor.execute("SELECT Code, NmbDayValid, UserQuota, Price FROM sijarta.voucher")
+    vouchers = [
+        {"Code": row[0], "NmbDayValid": row[1], "UserQuota": row[2], "Price": row[3]}
+        for row in cursor.fetchall()
+    ]
+
+    # Fetch promos
+    cursor.execute("SELECT Code, OfferEndDate FROM sijarta.promo")
+    promos = [
+        {"Code": row[0], "OfferEndDate": row[1]}
+        for row in cursor.fetchall()
+    ]
+
+    cursor.close()
+    conn.close()
+
+    return render(request, 'discounts.html', {
+        "vouchers": vouchers,
+        "promos": promos,
+        "user": {"mypay_balance": mypay_balance}
+    })
+
+
+def buy_voucher(request, voucher_code):
+    if request.method == 'POST':
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        user_id = request.session.get("user_id")
+        if not user_id:
+            return JsonResponse({"error": "User not logged in"}, status=403)
+
+        cursor.execute("SELECT Price FROM sijarta.voucher WHERE Code = %s", (voucher_code,))
+        voucher_row = cursor.fetchone()
+        if not voucher_row:
+            conn.close()
+            return JsonResponse({"error": "Voucher not found"}, status=404)
+
+        voucher_price = voucher_row[0]
+        cursor.execute("SELECT MyPayBalance FROM sijarta.USERS WHERE Id = %s", (user_id,))
+        user_row = cursor.fetchone()
+
+        if not user_row:
+            conn.close()
+            return JsonResponse({"error": "User not found"}, status=404)
+
+        user_balance = user_row[0]
+        if user_balance >= voucher_price:
+            new_balance = user_balance - voucher_price
+            cursor.execute("UPDATE sijarta.USERS SET MyPayBalance = %s WHERE Id = %s", (new_balance, user_id))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return JsonResponse({"success": True, "new_balance": new_balance})
+        else:
+            conn.close()
+            return JsonResponse({"error": "Insufficient balance"}, status=400)
+
+
+
+def buy_promo(request, promo_code):
+    if request.method == 'POST':
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        user_id = request.session.get("user_id")
+        if not user_id:
+            return JsonResponse({"error": "User not logged in"}, status=403)
+
+        cursor.execute("SELECT Discount FROM sijarta.promo WHERE Code = %s", (promo_code,))
+        promo_row = cursor.fetchone()
+        if not promo_row:
+            conn.close()
+            return JsonResponse({"error": "Promo not found"}, status=404)
+
+        promo_price = 5  # Example price for all promos
+        cursor.execute("SELECT MyPayBalance FROM sijarta.USERS WHERE Id = %s", (user_id,))
+        user_row = cursor.fetchone()
+
+        if not user_row:
+            conn.close()
+            return JsonResponse({"error": "User not found"}, status=404)
+
+        user_balance = user_row[0]
+        if user_balance >= promo_price:
+            new_balance = user_balance - promo_price
+            cursor.execute("UPDATE sijarta.USERS SET MyPayBalance = %s WHERE Id = %s", (new_balance, user_id))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return JsonResponse({"success": True, "new_balance": new_balance})
+        else:
+            conn.close()
+            return JsonResponse({"error": "Insufficient balance"}, status=400)

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-jqarmaywsw)2th9pg6*!pb3s2on@d&yxj#h(wc1z5ebwm+)k5!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1","william-samuel-database.pbp.cs.ui.ac.id", 'ferdinand-bonfilio-rabbids.pbp.cs.ui.ac.id']
 
 LOGIN_URL = '/login/'
 

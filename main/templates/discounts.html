@@ -6,32 +6,40 @@
 {% include 'navbar.html' %}
 <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
     <h1 class="text-3xl font-bold mb-6">Available Vouchers & Promotions</h1>
+    <p class="mb-6 text-lg">MyPay Balance: ${{ user.mypay_balance }}</p>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <!-- Display Vouchers -->
         {% for voucher in vouchers %}
         <div class="bg-white p-4 shadow-lg rounded-lg">
-            <h2 class="text-xl font-semibold mb-2">{{ voucher.code }}</h2>
-            <p class="mb-4">{{ voucher.description }}</p>
-            <p class="font-semibold text-lg mb-4">Price: ${{ voucher.price }}</p>
-            <button onclick="checkBalanceAndBuy({{ voucher.price }})" class="bg-blue-500 text-white py-2 px-4 rounded-lg w-full">Buy</button>
+            <h2 class="text-xl font-semibold mb-2">{{ voucher.Code }}</h2>
+            <p class="mb-4">Name: {{ voucher.Name }}</p>
+            <p class="mb-4">Valid for {{ voucher.NmbDayValid }} days</p>
+            {% if voucher.UserQuota %}
+            <p class="mb-4">User Quota: {{ voucher.UserQuota }}</p>
+            {% endif %}
+            <p class="font-semibold text-lg mb-4">Price: ${{ voucher.Price }}</p>
+            <button onclick="checkBalanceAndBuyVoucher('{{ voucher.Code }}', {{ voucher.Price }})" class="bg-blue-500 text-white py-2 px-4 rounded-lg w-full">Buy</button>
         </div>
         {% endfor %}
 
+        <!-- Display Promos -->
         {% for promo in promos %}
         <div class="bg-white p-4 shadow-lg rounded-lg">
-            <h2 class="text-xl font-semibold mb-2">{{ promo.code }}</h2>
-            <p class="font-semibold text-lg mb-4">Discount: {{ promo.discount }}%</p>
-            <button onclick="applyPromo('{{ promo.code }}')" class="bg-blue-500 text-white py-2 px-4 rounded-lg w-full">Apply</button>
+            <h2 class="text-xl font-semibold mb-2">{{ promo.Code }}</h2>
+            <p class="mb-4">Discount: {{ promo.Discount }}%</p>
+            <p class="font-semibold text-lg mb-4">Promo Price: ${{ promo.Price }}</p>
+            <button onclick="buyPromo('{{ promo.Code }}')" class="bg-blue-500 text-white py-2 px-4 rounded-lg w-full">Buy</button>
         </div>
         {% endfor %}
     </div>
 </div>
 
-<!-- Modals (Success and Failure) -->
+<!-- Modals -->
 <div id="successModal" class="modal">
     <div class="modal-content">
         <h2>Purchase Successful</h2>
-        <p>Your voucher has been purchased successfully.</p>
+        <p>Your voucher or promo has been purchased successfully.</p>
         <button onclick="closeModal()">Close</button>
     </div>
 </div>
@@ -39,7 +47,7 @@
 <div id="failureModal" class="modal">
     <div class="modal-content">
         <h2>Insufficient Balance</h2>
-        <p>Your MyPay balance is insufficient to purchase the voucher.</p>
+        <p>Your MyPay balance is insufficient to purchase the voucher or promo.</p>
         <button onclick="closeModal()">Close</button>
     </div>
 </div>
@@ -62,29 +70,54 @@
 
 <!-- JavaScript for Modals -->
 <script>
-    function checkBalanceAndBuy(voucherPrice) {
-        const successModal = document.getElementById('successModal');
-        const failureModal = document.getElementById('failureModal');
-        successModal.style.display = 'none'; 
-        failureModal.style.display = 'none'; 
+    // For buying voucher
+    function checkBalanceAndBuyVoucher(voucherCode, voucherPrice) {
+        fetch(`/buy-voucher/${voucherCode}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+            body: JSON.stringify({ price: voucherPrice })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector('.mypay-balance').textContent = `$${data.new_balance}`;
+                document.getElementById('successModal').style.display = 'block';
+            } else {
+                alert("Failed: " + data.error);
+                document.getElementById('failureModal').style.display = 'block';
+            }
+        })
+        .catch(err => console.error("Error:", err));
+    }
 
-        const userBalance = {{ user.mypay_balance }};
-        if (userBalance >= voucherPrice) {
-            successModal.style.display = 'block';
-        } else {
-            failureModal.style.display = 'block';
-        }
+    // For buying promo
+    function buyPromo(promoCode) {
+        fetch(`/buy-promo/${promoCode}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector('.mypay-balance').textContent = `$${data.new_balance}`;
+                document.getElementById('successModal').style.display = 'block';
+            } else {
+                alert("Failed: " + data.error);
+                document.getElementById('failureModal').style.display = 'block';
+            }
+        })
+        .catch(err => console.error("Error:", err));
     }
 
     function closeModal() {
-        const successModal = document.getElementById('successModal');
-        const failureModal = document.getElementById('failureModal');
-        successModal.style.display = 'none';
-        failureModal.style.display = 'none';
-    }
-
-    function applyPromo(promoCode) {
-        alert("Promo code " + promoCode + " applied!");
+        document.getElementById('successModal').style.display = 'none';
+        document.getElementById('failureModal').style.display = 'none';
     }
 </script>
 {% endblock %}

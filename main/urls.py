@@ -17,4 +17,8 @@ urlpatterns = [
     path('myorder/', views.myorder, name='myorder'),
     path('discounts/', views.discount, name='discounts'),
     path('manage_order_status/', views.manage_order_status, name='manage_order_status'),
+    path('buy-voucher/<str:voucher_code>/', views.buy_voucher, name='buy_voucher'),
+    path('buy-promo/<str:promo_code>/', views.buy_promo, name='buy_promo'),
+    path('subcategory/worker/<str:subcategory_name>/', views.subcategory_worker, name='subcategory_worker'),
+    
 ]
