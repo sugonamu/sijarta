@@ -3,7 +3,7 @@
 {% block title %}Manage My Job{% endblock title %}
 
 {% block content %}
-{% include 'navbar.html' %}
+{% include 'Y_navbar.html' %}
 
 <div class="container mx-auto p-6 bg-gray-100 min-h-screen">
     <h1 class="text-3xl font-bold mb-6">Manage My Job</h1>
@@ -16,8 +16,8 @@
             <select id="categoryFilter" name="category" class="p-2 border border-gray-300 rounded" onchange="this.form.submit()">
                 <option value="">All Categories</option>
                 {% for category in categories %}
-                    <option value="{{ category.id }}" {% if category.id|stringformat:"s" == request.GET.category %}selected{% endif %}>
-                        {{ category.name }}
+                    <option value="{{ category.0 }}" {% if category.0|stringformat:"s" == selected_category %}selected{% endif %}>
+                        {{ category.1 }}
                     </option>
                 {% endfor %}
             </select>
@@ -29,8 +29,8 @@
             <select id="subcategoryFilter" name="subcategory" class="p-2 border border-gray-300 rounded" onchange="this.form.submit()">
                 <option value="">All Subcategories</option>
                 {% for subcategory in subcategories %}
-                    <option value="{{ subcategory.id }}" {% if subcategory.id|stringformat:"s" == request.GET.subcategory %}selected{% endif %}>
-                        {{ subcategory.name }}
+                    <option value="{{ subcategory.0 }}" {% if subcategory.0|stringformat:"s" == selected_subcategory %}selected{% endif %}>
+                        {{ subcategory.1 }}
                     </option>
                 {% endfor %}
             </select>
@@ -40,16 +40,16 @@
     </form>
 
     <div class="space-y-4">
-        {% if orders %}
-            {% for order in orders %}
+        {% if available_orders %}
+            {% for order in available_orders %}
                 <div class="border border-gray-300 rounded bg-white p-4 flex items-center justify-between">
                     <!-- Left Section -->
                     <div class="flex-grow">
                         <div class="flex items-center space-x-4">
                             <!-- Subcategory Name -->
-                            <div class="font-bold text-lg">{{ order.subcategory.name }}</div>
+                            <div class="font-bold text-lg">{{ order.subcategory_name }}</div>
                             <!-- User's Name -->
-                            <div class="text-sm text-gray-600">User's Name: {{ order.user.user.username }}</div>
+                            <div class="text-sm text-gray-600">User's Name: {{ order.customer_name }}</div>
                         </div>
                         <div class="mt-2 grid grid-cols-3 gap-4 text-sm text-gray-600">
                             <!-- Order Date -->
@@ -60,7 +60,7 @@
                             <!-- Working Date -->
                             <div>
                                 <p class="font-medium">Working Date</p>
-                                <p>{{ order.working_date }}</p>
+                                <p>{{ order.service_date }}</p>
                             </div>
                             <!-- Session -->
                             <div>
@@ -73,12 +73,16 @@
                     <div class="flex items-center space-x-4">
                         <!-- Total Amount -->
                         <div class="text-gray-700 font-medium">
-                            Total Amount: Rp {{ order.total_payment }}
+                            Total Amount: Rp {{ order.total_price }}
                         </div>
                         <!-- Accept Order Button -->
-                        <button class="p-2 bg-green-500 text-white rounded hover:bg-green-600">
-                            Accept Order
-                        </button>
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="order_id" value="{{ order.id }}">
+                            <button type="submit" class="p-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                Accept Order
+                            </button>
+                        </form>
                     </div>
                 </div>
             {% endfor %}
@@ -86,4 +90,5 @@
             <p class="text-gray-600">No orders found.</p>
         {% endif %}
     </div>
+</div>
 {% endblock content %}
