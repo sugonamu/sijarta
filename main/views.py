@@ -4,7 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password, check_password
-from .utils import authenticate_user, get_db_connection,get_service_categories,get_service_subcategories,get_service_sessions_by_subcategory,get_testimonials_query
+from .utils import authenticate_user, get_db_connection,get_service_categories,get_service_subcategories,get_service_sessions_by_subcategory,get_testimonials_query, get_user_profile
 from django.contrib import messages
 
 from django.db import connection
@@ -185,7 +185,6 @@ def mypay_transaction_view(request):
         'service_orders': service_orders,
     })
 
-# incomplete
 def managejob(request):
     user_id = request.session.get('user_id')
     user_role = request.session.get('user_role')
@@ -453,13 +452,128 @@ def register_view(request):
 
     return render(request, 'Y_register.html')
 
-# incomplete
 def logout(request):
     auth_logout(request) 
     return redirect('main:login')  
 
 def profile(request):
-    return render(request, 'Y_profile.html')
+    user_id = request.session.get('user_id')
+    user_role = request.session.get('user_role')
+    if not user_id:
+        return redirect('main:login')
+
+    conn = get_db_connection()
+    user_profile = None
+    try:
+        with conn.cursor() as cursor:
+            # Fetch user profile data
+            cursor.execute("""
+                SELECT u.Id, u.Name, u.PhoneNum, u.Sex, u.DoB, u.Address, u.MyPayBalance,
+                       CASE WHEN EXISTS(SELECT 1 FROM sijarta.customer c WHERE c.Id = u.Id) THEN 'customer'
+                            WHEN EXISTS(SELECT 1 FROM sijarta.worker w WHERE w.Id = u.Id) THEN 'worker'
+                            ELSE NULL END as role,
+                        w.BankName, w.Accnumber, w.NPWP, w.PicURL
+                FROM sijarta.users u
+                LEFT JOIN sijarta.worker w ON u.Id = w.Id
+                WHERE u.Id = %s
+                LIMIT 1;
+            """, [user_id])
+            row = cursor.fetchone()
+            if row:
+                user_profile = {
+                    'id': row[0],
+                    'name': row[1],
+                    'phone': row[2],
+                    'sex': row[3],
+                    'dob': row[4],
+                    'address': row[5],
+                    'mypay_balance': row[6],
+                    'role': row[7],
+                    'bank_name': row[8],
+                    'acc_number': row[9],
+                    'npwp': row[10],
+                    'pic_url': row[11],
+                }
+    finally:
+        conn.close()
+
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        password = request.POST.get('password')
+        sex = request.POST.get('sex')
+        phone = request.POST.get('phone')
+        birth_date = request.POST.get('birth_date')
+        address = request.POST.get('address')
+        bank_name = request.POST.get('bank_name')
+        account_number = request.POST.get('account_number')
+        npwp = request.POST.get('npwp')
+        image = request.POST.get('image')
+        
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # Update user data if changed
+                update_fields = []
+                params = []
+                if name and name != user_profile['name']:
+                    update_fields.append("Name = %s")
+                    params.append(name)
+                if password:
+                    update_fields.append("Pwd = %s")
+                    params.append(password)
+                if sex and sex != user_profile['sex']:
+                    update_fields.append("Sex = %s")
+                    params.append(sex)
+                if phone and phone != user_profile['phone']:
+                    update_fields.append("PhoneNum = %s")
+                    params.append(phone)
+                if birth_date and birth_date != str(user_profile['dob']):
+                    update_fields.append("DoB = %s")
+                    params.append(birth_date)
+                if address and address != user_profile['address']:
+                    update_fields.append("Address = %s")
+                    params.append(address)
+                
+                if update_fields:
+                    query = f"UPDATE sijarta.users SET {', '.join(update_fields)} WHERE Id = %s"
+                    params.append(user_id)
+                    cursor.execute(query, params)
+
+                if user_role == 'worker':
+                    worker_update_fields = []
+                    worker_params = []
+                    if bank_name and bank_name != user_profile['bank_name']:
+                        worker_update_fields.append("BankName = %s")
+                        worker_params.append(bank_name)
+                    if account_number and account_number != user_profile['acc_number']:
+                        worker_update_fields.append("Accnumber = %s")
+                        worker_params.append(account_number)
+                    if npwp and npwp != user_profile['npwp']:
+                        worker_update_fields.append("NPWP = %s")
+                        worker_params.append(npwp)
+                    if image and image != user_profile['pic_url']:
+                        worker_update_fields.append("PicURL = %s")
+                        worker_params.append(image)
+                    
+                    if worker_update_fields:
+                        query = f"UPDATE sijarta.worker SET {', '.join(worker_update_fields)} WHERE Id = %s"
+                        worker_params.append(user_id)
+                        cursor.execute(query, worker_params)
+                
+                conn.commit()
+                messages.success(request, 'Profile updated successfully!')
+                return redirect('main:profile')
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            messages.error(request, f'Error updating profile: {str(e)}')
+        finally:
+            conn.close()
+
+    return render(request, 'Y_profile.html', {
+        'profile': user_profile,
+    })
+
 
 # ==================================== Green ====================================
 
@@ -542,7 +656,6 @@ def subcategory_worker(request, subcategory_name):
         'testimonials': testimonials,
     })
 
-# incomplete
 def myorder(request):
     return render(request, 'myorder.html')
 
@@ -655,6 +768,5 @@ def buy_promo(request, promo_code):
             conn.close()
             return JsonResponse({"error": "Insufficient balance"}, status=400)
 
-# incomplete
 
 

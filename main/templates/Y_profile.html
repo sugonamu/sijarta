@@ -27,86 +27,106 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data" id="profile-form">
                 {% csrf_token %}
 
                 <div class="mb-5">
                     <label class="block font-semibold text-gray-600 mb-2">Name:</label>
-                    <input type="text" name="name" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
+                    <input type="text" name="name" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" value="{{ profile.name }}" disabled>
                 </div>
 
                 <div class="mb-5">
                     <label for="password" class="block font-semibold text-gray-600 mb-2">Password:</label>
-                    <input type="password" name="password" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
+                    <input type="password" name="password" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" disabled>
                 </div>
 
                 <div class="mb-5">
                     <label for="sex" class="block font-semibold text-gray-600 mb-2">Sex:</label>
-                    <select name="sex" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
-                        <option value="M">Male</option>
-                        <option value="F">Female</option>
+                    <select name="sex" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" disabled>
+                        <option value="M" {% if profile.sex == 'M' %}selected{% endif %}>Male</option>
+                        <option value="F" {% if profile.sex == 'F' %}selected{% endif %}>Female</option>
                     </select>
                 </div>
 
                 <div class="mb-5">
                     <label for="phone" class="block font-semibold text-gray-600 mb-2">Phone Number:</label>
-                    <input type="text" name="phone" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
+                    <input type="text" name="phone" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" value="{{ profile.phone }}" disabled>
                 </div>
 
                 <div class="mb-5">
                     <label for="birth_date" class="block font-semibold text-gray-600 mb-2">Birth Date:</label>
-                    <input type="date" name="birth_date" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
+                    <input type="date" name="birth_date" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" value="{{ profile.dob|date:'Y-m-d' }}" disabled>
                 </div>
 
                 <div class="mb-5">
                     <label for="address" class="block font-semibold text-gray-600 mb-2">Address:</label>
-                    <input type="text" name="address" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
+                    <input type="text" name="address" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" value="{{ profile.address }}" disabled>
                 </div>
 
-                {% if request.session.user_role == 'worker' %}
+                {% if profile.role == 'worker' %}
                 <div class="mb-4">
                     <label for="bank_name" class="block font-semibold text-gray-600 mb-2">Bank Name</label>
-                    <select id="bank_name" name="bank_name" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
-                        <option value="GoPay">GoPay</option>
-                        <option value="OVO">OVO</option>
-                        <option value="Virtual Account BCA">Virtual Account BCA</option>
-                        <option value="Virtual Account BNI">Virtual Account BNI</option>
-                        <option value="Virtual Account Mandiri">Virtual Account Mandiri</option>
+                    <select id="bank_name" name="bank_name" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" disabled>
+                        <option value="GoPay" {% if profile.bank_name == 'GoPay' %}selected{% endif %}>GoPay</option>
+                        <option value="OVO" {% if profile.bank_name == 'OVO' %}selected{% endif %}>OVO</option>
+                        <option value="Virtual Account BCA" {% if profile.bank_name == 'Virtual Account BCA' %}selected{% endif %}>Virtual Account BCA</option>
+                        <option value="Virtual Account BNI" {% if profile.bank_name == 'Virtual Account BNI' %}selected{% endif %}>Virtual Account BNI</option>
+                        <option value="Virtual Account Mandiri" {% if profile.bank_name == 'Virtual Account Mandiri' %}selected{% endif %}>Virtual Account Mandiri</option>
                     </select>
                 </div>
 
                 <div class="mb-5">
                     <label for="account_number" class="block font-semibold text-gray-600 mb-2">Account Number:</label>
-                    <input type="text" name="account_number" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
+                    <input type="text" name="account_number" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" value="{{ profile.acc_number }}" disabled>
                 </div>
 
                 <div class="mb-5">
                     <label for="npwp" class="block font-semibold text-gray-600 mb-2">NPWP:</label>
-                    <input type="text" name="npwp" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
+                    <input type="text" name="npwp" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" value="{{ profile.npwp }}" disabled>
                 </div>
 
                 <div class="mb-5">
                     <label for="image" class="block font-semibold text-gray-600 mb-2">Image URL:</label>
-                    <input type="text" name="image" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]">
+                    <input type="text" name="image" class="w-full p-3 rounded-lg bg-[#D8CFC6] text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#D4AA7D]" value="{{ profile.pic_url }}" disabled>
                 </div>
                 {% endif %}
 
                 <div class="button-container">
-                    <button type="submit" class="w-full bg-[#b89576] hover:bg-[#D4AA7D] text-white py-3 px-6 rounded-lg font-semibold mt-4 transition-all">Update</button>
+                    <button type="submit" class="w-full bg-[#b89576] hover:bg-[#D4AA7D] text-white py-3 px-6 rounded-lg font-semibold mt-4 transition-all" disabled id="update-button">Update</button>
                 </div>
             </form>
         </div>
 
         <!-- Profile Preview Section -->
-        <div class="md:w-1/2 w-full bg-[#D8CFC6] p-8 rounded-xl text-center shadow-lg">
+        <div class="md:w-1/2 w-full bg-[#D8CFC6] p-8 rounded-xl text-center shadow-lg" id="profile-preview" onclick="enableEdit()">
             <h2 class="text-2xl font-bold text-[#D4AA7D] mb-4">Preview</h2>
 
-            <img src="{{ profile.user.profile.image.url }}" alt="Profile Picture" class="w-36 h-36 rounded-full mx-auto mb-4 border-4 border-[#E3CDB6] shadow-lg object-cover">
+            {% if profile.pic_url %}
+                <img src="{{ profile.pic_url }}" alt="Profile Picture" class="w-36 h-36 rounded-full mx-auto mb-4 border-4 border-[#E3CDB6] shadow-lg object-cover">
+            {% else %}
+                <div class="w-36 h-36 rounded-full mx-auto mb-4 border-4 border-[#E3CDB6] shadow-lg flex items-center justify-center">
+                    <span class="text-gray-500">No Image</span>
+                </div>
+            {% endif %}
 
-            <p class="text-xl font-medium text-gray-800 mb-1">{{ profile.user.username }}</p>
-            <p class="text-lg text-gray-700 mb-1">{{ profile.user.first_name }} {{ profile.user.last_name }}</p>
-            <p class="text-sm text-gray-600">{{ profile.user.email }}</p>
+            <p class="text-xl font-medium text-gray-800 mb-1">{{ profile.name }}</p>
+            <p class="text-lg text-gray-700 mb-1">{{ profile.phone }}</p>
+            <p class="text-sm text-gray-600">Role: {{ profile.role }}</p>
+            {% if profile.role == 'worker' %}
+                <p class="text-sm text-gray-600">Bank: {{ profile.bank_name }}</p>
+            {% endif %}
         </div>
     </div>
 </div>
+
+<script>
+    function enableEdit() {
+        const inputs = document.querySelectorAll('#profile-form input, #profile-form select');
+        const updateButton = document.getElementById('update-button');
+        inputs.forEach(input => {
+            input.disabled = false;
+        });
+        updateButton.disabled = false;
+    }
+</script>
 {% endblock content %}
