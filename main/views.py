@@ -11,152 +11,7 @@ from django.db import connection
 import uuid
 from django.utils import timezone
 
-
-def login_view(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-
-        user = authenticate_user(username, password)
-        if user:
-            # Convert UUID to string before storing it in the session
-            request.session['user_id'] = str(user[0])
-            request.session['user_role'] = user[1]
-            request.session['username'] = username
-            return redirect('main:success')  # Include the namespace
-        else:
-            return render(request, 'login.html', {'error': 'Invalid credentials'})
-    return render(request, 'login.html')
-
-
-def register_view(request):
-    if request.method == 'POST':
-        name = request.POST['name']
-        phone = request.POST['phone']
-        password = request.POST['password']  # Store password as plaintext
-        sex = request.POST['sex']
-        dob = request.POST.get('dob', None)
-        address = request.POST.get('address', None)
-        role = request.POST['role']
-        
-        # Worker-specific fields (only included if role is 'worker')
-        bank_name = request.POST.get('bank_name', '')
-        account_number = request.POST.get('account_number', '')
-        npwp = request.POST.get('npwp', '')
-        image_url = request.POST.get('image_url', '')
-
-        conn = get_db_connection()
-        try:
-            with conn.cursor() as cursor:
-                # Insert user into the database
-                cursor.execute("""
-                    INSERT INTO sijarta.users (id, name, sex, phoneNum, pwd, dob, address, myPayBalance)
-                    VALUES (gen_random_uuid(), %s, %s, %s, %s, %s, %s, 0)
-                """, (name, sex, phone, password, dob, address))
-                
-                # Insert into customer or worker table based on role
-                if role == 'user':
-                    cursor.execute("""
-                        INSERT INTO sijarta.customer (id, level)
-                        VALUES ((SELECT id FROM sijarta.users WHERE phoneNum = %s), 'Basic')
-                    """, [phone])
-                elif role == 'worker':
-                    # Insert into the worker table with the additional fields
-                    cursor.execute("""
-                        INSERT INTO sijarta.worker (id, bankName, accNumber, npwp, picUrl, rate, totalFinishOrder)
-                        VALUES ((SELECT id FROM sijarta.users WHERE phoneNum = %s), %s, %s, %s, %s, 0, 0)
-                    """, [phone, bank_name, account_number, npwp, image_url])
-
-            conn.commit()
-            messages.success(request, 'Registration successful!')
-            return redirect('main:login')
-        except Exception as e:
-            conn.rollback()
-            messages.error(request, f'Error during registration: {str(e)}')
-        finally:
-            conn.close()
-
-    return render(request, 'register.html')
-
-def success_view(request):
-    # Retrieve session data
-    user_id = request.session.get('user_id')
-    user_role = request.session.get('user_role')
-    username = request.session.get('username', 'Guest')
-
-    # Get service categories from the database
-    categories = get_service_categories()
-
-    # Prepare the context with categories and subcategories
-    categories_with_subcategories = []
-    for category in categories:
-        subcategories = get_service_subcategories(category[0])  # Assuming category[0] is the category ID
-        categories_with_subcategories.append({
-            'category': category,
-            'subcategories': subcategories,
-        })
-
-    # Render the success page with categories and their subcategories
-    return render(request, 'success.html', {
-        'user_id': user_id,
-        'user_role': user_role,
-        'username': username,
-        'categories_with_subcategories': categories_with_subcategories,  # Use the new structure
-    })
-
-
-def subcategory_user(request, subcategory_name):
-    from django.db import connection
-
-    # Call the utility function to get the grouped sessions for the specific subcategory
-    grouped_sessions = get_service_sessions_by_subcategory(subcategory_name)
-
-    # Fetch testimonials
-    testimonials = []
-    with connection.cursor() as cursor:
-        cursor.execute(get_testimonials_query(subcategory_name), [subcategory_name])
-        rows = cursor.fetchall()
-        for row in rows:
-            testimonials.append({
-                'customer_name': row[0],
-                'review': row[1],
-                'rating': row[2],
-                'service_date': row[3],
-                'worker_name': row[4],
-            })
-
-    # Pass the data to the template
-    return render(request, 'subcategory_user.html', {
-        'subcategory_name': subcategory_name,
-        'grouped_sessions': grouped_sessions,
-        'testimonials': testimonials,
-    })
-
-def subcategory_worker(request, subcategory_name):
-
-    # Call the utility function to get the grouped sessions for the specific subcategory
-    grouped_sessions = get_service_sessions_by_subcategory(subcategory_name)
-
-    # Fetch testimonials
-    testimonials = []
-    with connection.cursor() as cursor:
-        cursor.execute(get_testimonials_query(subcategory_name), [subcategory_name])
-        rows = cursor.fetchall()
-        for row in rows:
-            testimonials.append({
-                'customer_name': row[0],
-                'review': row[1],
-                'rating': row[2],
-                'service_date': row[3],
-                'worker_name': row[4],
-            })
-
-    # Pass the data to the template
-    return render(request, 'subcategory_worker.html', {
-        'subcategory_name': subcategory_name,
-        'grouped_sessions': grouped_sessions,
-        'testimonials': testimonials,
-    })
+# ==================================== Red ====================================
 def mypay_view(request):
     user_id = request.session.get('user_id')
     user_role = request.session.get('user_role')
@@ -192,11 +47,10 @@ def mypay_view(request):
     finally:
         conn.close()
 
-    return render(request, 'mypay.html', {
+    return render(request, 'R_mypay.html', {
         'balance': balance,
         'transactions': transactions,
     })
-
 
 def mypay_transaction_view(request):
     user_id = request.session.get('user_id')
@@ -326,27 +180,373 @@ def mypay_transaction_view(request):
         finally:
             conn.close()
 
-    return render(request, 'mypay_transaction.html', {
+    return render(request, 'R_mypay_transaction.html', {
         'user_role': user_role,
         'service_orders': service_orders,
     })
 
+# incomplete
+def managejob(request):
+    user_id = request.session.get('user_id')
+    user_role = request.session.get('user_role')
+    if not user_id or user_role != 'worker':
+        return redirect('main:login')
+
+    conn = get_db_connection()
+    available_orders = []
+    categories = []
+    subcategories = []
+    selected_category = request.GET.get('category', '')
+    selected_subcategory = request.GET.get('subcategory', '')
+    try:
+        with conn.cursor() as cursor:
+            # Fetch all service categories
+            cursor.execute("SELECT id, categoryname FROM sijarta.service_category")
+            categories = cursor.fetchall()
+
+            # Fetch subcategories if a category is selected
+            if selected_category:
+                cursor.execute("""
+                    SELECT id, subcategoryname
+                    FROM sijarta.service_subcategory
+                    WHERE servicecategoryid = %s
+                """, [selected_category])
+                subcategories = cursor.fetchall()
+
+            # Fetch all available service orders with status "Looking for Nearby Worker"
+            query = """
+                SELECT so.Id, so.orderDate, so.serviceDate, so.serviceTime, so.TotalPrice,
+                       sc.subcategoryname, sc.description,
+                       u.name as customer_name, sc.id as subcategory_id,
+                       so.session
+                FROM sijarta.tr_service_order so
+                JOIN sijarta.service_subcategory sc ON so.SubcategoryId = sc.id
+                JOIN sijarta.tr_order_status tos ON so.Id = tos.serviceTrId
+                JOIN sijarta.order_status os ON tos.statusId = os.id
+                JOIN sijarta.users u ON so.customerId = u.id
+                WHERE os.status = 'Finding Nearest Worker'
+            """
+            params = []
+            if selected_subcategory:
+                query += " AND sc.id = %s"
+                params.append(selected_subcategory)
+            elif selected_category:
+                query += " AND sc.servicecategoryid = %s"
+                params.append(selected_category)
+            
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            for row in rows:
+                available_orders.append({
+                    'id': row[0],
+                    'order_date': row[1],
+                    'service_date': row[2],
+                    'service_time': row[3],
+                    'total_price': row[4],
+                    'subcategory_name': row[5],
+                    'description': row[6],
+                    'customer_name': row[7],
+                    'subcategory_id': row[8],
+                    'session': row[9],
+                })
+    finally:
+        conn.close()
+
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # Update the order status to "Worker Assigned"
+                cursor.execute("""
+                    UPDATE sijarta.tr_order_status
+                    SET statusId = (SELECT id FROM sijarta.order_status WHERE status = 'Worker Assigned'),
+                        date = CURRENT_TIMESTAMP
+                    WHERE serviceTrId = %s
+                """, [order_id])
+                
+                # Update the service order with the worker ID and job date
+                cursor.execute("""
+                    UPDATE sijarta.tr_service_order
+                    SET workerId = %s,
+                        serviceDate = CURRENT_DATE,
+                        serviceTime = CURRENT_TIMESTAMP
+                    WHERE Id = %s
+                """, [user_id, order_id])
+                
+                # Calculate job duration (assuming 1 session = 1 day)
+                cursor.execute("""
+                    SELECT session FROM sijarta.tr_service_order WHERE Id = %s
+                """, [order_id])
+                session_row = cursor.fetchone()
+                if session_row:
+                    session = session_row[0]
+                    # Update the service order with the job duration
+                    cursor.execute("""
+                        UPDATE sijarta.tr_service_order
+                        SET serviceDate = CURRENT_DATE + INTERVAL '%s day'
+                        WHERE Id = %s
+                    """, [session, order_id])
+                
+                conn.commit()
+                messages.success(request, 'Order accepted successfully!')
+                return redirect('main:managejob')
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            messages.error(request, f'Error accepting order: {str(e)}')
+        finally:
+            conn.close()
+
+    return render(request, 'R_manage_job.html', {
+        'available_orders': available_orders,
+        'categories': categories,
+        'subcategories': subcategories,
+        'selected_category': selected_category,
+        'selected_subcategory': selected_subcategory,
+    })
+
+def manage_order_status(request):
+    user_id = request.session.get('user_id')
+    user_role = request.session.get('user_role')
+    if not user_id or user_role != 'worker':
+        return redirect('main:login')
+
+    conn = get_db_connection()
+    active_orders = []
+    search_name = request.GET.get('service_name', '')
+    search_status = request.GET.get('service_status', '')
+    try:
+        with conn.cursor() as cursor:
+            # Fetch all active service orders for the current worker
+            query = """
+                SELECT so.Id, so.orderDate, so.serviceDate, so.serviceTime, so.TotalPrice,
+                       sc.subcategoryname, os.status,
+                       u.name as customer_name, so.session
+                FROM sijarta.tr_service_order so
+                JOIN sijarta.service_subcategory sc ON so.SubcategoryId = sc.id
+                JOIN sijarta.tr_order_status tos ON so.Id = tos.serviceTrId
+                JOIN sijarta.order_status os ON tos.statusId = os.id
+                JOIN sijarta.users u ON so.customerId = u.id
+                WHERE so.workerId = %s
+            """
+            params = [user_id]
+            if search_name:
+                query += " AND sc.subcategoryname ILIKE %s"
+                params.append(f"%{search_name}%")
+            if search_status:
+                query += " AND os.status = %s"
+                params.append(search_status)
+            query += " ORDER BY so.serviceDate DESC"
+            cursor.execute(query, params)
+            rows = cursor.fetchall()
+            for row in rows:
+                active_orders.append({
+                    'id': row[0],
+                    'order_date': row[1],
+                    'service_date': row[2],
+                    'service_time': row[3],
+                    'total_price': row[4],
+                    'subcategory_name': row[5],
+                    'status': row[6],
+                    'customer_name': row[7],
+                    'session': row[8],
+                })
+    finally:
+        conn.close()
+
+    if request.method == 'POST':
+        order_id = request.POST.get('order_id')
+        new_status = request.POST.get('new_status')
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # Update the order status
+                cursor.execute("""
+                    UPDATE sijarta.tr_order_status
+                    SET statusId = (SELECT id FROM sijarta.order_status WHERE status = %s),
+                        date = CURRENT_TIMESTAMP
+                    WHERE serviceTrId = %s
+                """, [new_status, order_id])
+                conn.commit()
+                messages.success(request, f'Order status updated to {new_status}!')
+                return redirect('main:manage_order_status')
+        except Exception as e:
+            if conn:
+                conn.rollback()
+            messages.error(request, f'Error updating order status: {str(e)}')
+        finally:
+            conn.close()
+
+    return render(request, 'R_manage_order_status.html', {
+        'active_orders': active_orders,
+        'search_name': search_name,
+        'search_status': search_status,
+    })
+
+
+
+# ==================================== Yellow ====================================
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate_user(username, password)
+        if user:
+            # Convert UUID to string before storing it in the session
+            request.session['user_id'] = str(user[0])
+            request.session['user_role'] = user[1]
+            request.session['username'] = username
+            return redirect('main:success')  # Include the namespace
+        else:
+            return render(request, 'Y_login.html', {'error': 'Invalid credentials'})
+    return render(request, 'Y_login.html')
+
+def register_view(request):
+    if request.method == 'POST':
+        name = request.POST['name']
+        phone = request.POST['phone']
+        password = request.POST['password']  # Store password as plaintext
+        sex = request.POST['sex']
+        dob = request.POST.get('dob', None)
+        address = request.POST.get('address', None)
+        role = request.POST['role']
+        
+        # Worker-specific fields (only included if role is 'worker')
+        bank_name = request.POST.get('bank_name', '')
+        account_number = request.POST.get('account_number', '')
+        npwp = request.POST.get('npwp', '')
+        image_url = request.POST.get('image_url', '')
+
+        conn = get_db_connection()
+        try:
+            with conn.cursor() as cursor:
+                # Insert user into the database
+                cursor.execute("""
+                    INSERT INTO sijarta.users (id, name, sex, phoneNum, pwd, dob, address, myPayBalance)
+                    VALUES (gen_random_uuid(), %s, %s, %s, %s, %s, %s, 0)
+                """, (name, sex, phone, password, dob, address))
+                
+                # Insert into customer or worker table based on role
+                if role == 'customer':
+                    cursor.execute("""
+                        INSERT INTO sijarta.customer (id, level)
+                        VALUES ((SELECT id FROM sijarta.users WHERE phoneNum = %s), 'Basic')
+                    """, [phone])
+                elif role == 'worker':
+                    # Insert into the worker table with the additional fields
+                    cursor.execute("""
+                        INSERT INTO sijarta.worker (id, bankName, accNumber, npwp, picUrl, rate, totalFinishOrder)
+                        VALUES ((SELECT id FROM sijarta.users WHERE phoneNum = %s), %s, %s, %s, %s, 0, 0)
+                    """, [phone, bank_name, account_number, npwp, image_url])
+
+            conn.commit()
+            messages.success(request, 'Registration successful!')
+            return redirect('main:login')
+        except Exception as e:
+            conn.rollback()
+            messages.error(request, f'Error during registration: {str(e)}')
+        finally:
+            conn.close()
+
+    return render(request, 'Y_register.html')
+
+# incomplete
 def logout(request):
     auth_logout(request) 
     return redirect('main:login')  
 
 def profile(request):
-    return render(request, 'profile.html')
+    return render(request, 'Y_profile.html')
 
-def manage_order_status(request):
-    return render(request, 'manage_order_status.html')
+# ==================================== Green ====================================
 
-def managejob(request):
-    return render(request, 'manage_job.html')
+def success_view(request):
+    # Retrieve session data
+    user_id = request.session.get('user_id')
+    user_role = request.session.get('user_role')
+    username = request.session.get('username', 'Guest')
 
+    # Get service categories from the database
+    categories = get_service_categories()
+
+    # Prepare the context with categories and subcategories
+    categories_with_subcategories = []
+    for category in categories:
+        subcategories = get_service_subcategories(category[0])  # Assuming category[0] is the category ID
+        categories_with_subcategories.append({
+            'category': category,
+            'subcategories': subcategories,
+        })
+
+    # Render the success page with categories and their subcategories
+    return render(request, 'success.html', {
+        'user_id': user_id,
+        'user_role': user_role,
+        'username': username,
+        'categories_with_subcategories': categories_with_subcategories,  # Use the new structure
+    })
+
+def subcategory_user(request, subcategory_name):
+    from django.db import connection
+
+    # Call the utility function to get the grouped sessions for the specific subcategory
+    grouped_sessions = get_service_sessions_by_subcategory(subcategory_name)
+
+    # Fetch testimonials
+    testimonials = []
+    with connection.cursor() as cursor:
+        cursor.execute(get_testimonials_query(subcategory_name), [subcategory_name])
+        rows = cursor.fetchall()
+        for row in rows:
+            testimonials.append({
+                'customer_name': row[0],
+                'review': row[1],
+                'rating': row[2],
+                'service_date': row[3],
+                'worker_name': row[4],
+            })
+
+    # Pass the data to the template
+    return render(request, 'subcategory_user.html', {
+        'subcategory_name': subcategory_name,
+        'grouped_sessions': grouped_sessions,
+        'testimonials': testimonials,
+    })
+
+def subcategory_worker(request, subcategory_name):
+
+    # Call the utility function to get the grouped sessions for the specific subcategory
+    grouped_sessions = get_service_sessions_by_subcategory(subcategory_name)
+
+    # Fetch testimonials
+    testimonials = []
+    with connection.cursor() as cursor:
+        cursor.execute(get_testimonials_query(subcategory_name), [subcategory_name])
+        rows = cursor.fetchall()
+        for row in rows:
+            testimonials.append({
+                'customer_name': row[0],
+                'review': row[1],
+                'rating': row[2],
+                'service_date': row[3],
+                'worker_name': row[4],
+            })
+
+    # Pass the data to the template
+    return render(request, 'subcategory_worker.html', {
+        'subcategory_name': subcategory_name,
+        'grouped_sessions': grouped_sessions,
+        'testimonials': testimonials,
+    })
+
+# incomplete
 def myorder(request):
     return render(request, 'myorder.html')
 
+# ==================================== Blue ====================================
 def discount(request):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -385,7 +585,6 @@ def discount(request):
         "user": {"mypay_balance": mypay_balance}
     })
 
-
 def buy_voucher(request, voucher_code):
     if request.method == 'POST':
         conn = get_db_connection()
@@ -421,8 +620,6 @@ def buy_voucher(request, voucher_code):
             conn.close()
             return JsonResponse({"error": "Insufficient balance"}, status=400)
 
-
-
 def buy_promo(request, promo_code):
     if request.method == 'POST':
         conn = get_db_connection()
@@ -457,3 +654,7 @@ def buy_promo(request, promo_code):
         else:
             conn.close()
             return JsonResponse({"error": "Insufficient balance"}, status=400)
+
+# incomplete
+
+

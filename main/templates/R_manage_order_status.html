@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Order Status{% endblock title %}
+
+{% block content %}
+{% include 'Y_navbar.html' %}
+
+<div class="container mx-auto p-6 bg-gray-100 min-h-screen">
+    <h1 class="text-3xl font-bold mb-6">Manage Order Status</h1>
+
+    <!-- Search and Filter Section -->
+    <form class="flex items-center space-x-4 mb-6" method="GET" action="{% url 'main:manage_order_status' %}">
+        <input type="text" name="service_name" placeholder="Service Name" class="p-2 border border-gray-300 rounded flex-grow" value="{{ search_name }}">
+        <select name="service_status" class="p-2 border border-gray-300 rounded">
+            <option value="">Service Status</option>
+            <option value="Waiting for Worker to Depart" {% if search_status == 'Waiting for Worker to Depart' %}selected{% endif %}>Waiting for Worker to Depart</option>
+            <option value="Worker Arrived at Location" {% if search_status == 'Worker Arrived at Location' %}selected{% endif %}>Worker Arrived at Location</option>
+            <option value="Service in Progress" {% if search_status == 'Service in Progress' %}selected{% endif %}>Service in Progress</option>
+            <option value="Order Completed" {% if search_status == 'Order Completed' %}selected{% endif %}>Order Completed</option>
+        </select>
+        <button type="submit" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">Search</button>
+    </form>
+
+    <!-- Orders Section -->
+    <div class="space-y-4">
+        {% for order in active_orders %}
+        <div class="border border-gray-300 rounded bg-white p-4 shadow grid grid-cols-12 gap-4">
+            <!-- Left Section -->
+            <div class="col-span-8 flex items-center space-x-2">
+                <p class="font-bold">{{ order.subcategory_name }}</p>
+                <span>|</span>
+                <p class="text-gray-600">User's Name: {{ order.customer_name }}</p>
+            </div>
+
+            <!-- Bottom Left Section -->
+            <div class="col-span-8 flex items-center space-x-4">
+                <p class="text-gray-600"><strong>Order Date:</strong> {{ order.order_date }}</p>
+                <p class="text-gray-600"><strong>Working Date:</strong> {{ order.service_date }}</p>
+                <p class="text-gray-600"><strong>Session:</strong> {{ order.session }}</p>
+            </div>
+
+            <!-- Right Section -->
+            <div class="col-span-4 flex justify-end items-center space-x-4">
+                <!-- Total Amount -->
+                <p class="font-medium text-gray-700">Rp {{ order.total_price }}</p>
+                <!-- Service Status and Button -->
+                <div class="text-right">
+                    <p class="font-medium text-gray-700">Service Status:</p>
+                    {% if order.status == 'Waiting for Worker to Depart' %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="order_id" value="{{ order.id }}">
+                            <input type="hidden" name="new_status" value="Worker Arrived at Location">
+                            <button type="submit" class="p-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                                Arrived at Location
+                            </button>
+                        </form>
+                    {% elif order.status == 'Worker Arrived at Location' %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="order_id" value="{{ order.id }}">
+                            <input type="hidden" name="new_status" value="Service in Progress">
+                            <button type="submit" class="p-2 bg-green-500 text-white rounded hover:bg-green-600">
+                                Providing Service
+                            </button>
+                        </form>
+                    {% elif order.status == 'Service in Progress' %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="order_id" value="{{ order.id }}">
+                            <input type="hidden" name="new_status" value="Order Completed">
+                            <button type="submit" class="p-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                                Service Completed
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="font-medium text-gray-700">{{ order.status }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <p class="text-gray-600">No active service orders.</p>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock content %}
